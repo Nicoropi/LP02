@@ -24,6 +24,19 @@ encontrar la instrucción de parar).
 3. Usar como ejemplos de pruebas al menos los mismos que se usaron en las pruebas de los diseños
 de la referida tarea donde se presentan los diseños del computador propuesto.
 
+## Archivos
+
+* Ambiente
+* CPU
+* ALU (?)
+* Unidad de Control
+* Ram
+* Cargador
+
+## Diseño
+
+![diseño](.\media\LPDiseñoComputador.png)
+
 ## TODO list
 
 🧱 A. Definición del modelo (antes de programar)
