@@ -35,7 +35,7 @@ de la referida tarea donde se presentan los diseños del computador propuesto.
 
 ## Diseño
 
-![diseño](.\media\LPDiseñoComputador.png)
+![diseño](.\media\LPDesignComp.png)
 
 ## TODO list
 
