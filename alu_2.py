@@ -19,9 +19,9 @@ class Alu:
         b_sign = (b >> 63) & 1
         r_sign = (raw >> 63) & 1
         if a_sign == b_sign and a_sign != r_sign:
-            self.registros.flags["O"] = 1
+            self.registros.flags["D"] = 1
         else:
-            self.registros.flags["O"] = 0
+            self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
 
     def check_overflow_float(self, raw_result):
@@ -30,9 +30,9 @@ class Alu:
         if integer_part & (1 << 31):
             integer_part -= (1 << 32)
         if integer_part > (2**31 - 1) or integer_part < -(2**31):
-            self.registros.flags["O"] = 1
+            self.registros.flags["D"] = 1
         else:
-            self.registros.flags["O"] = 0
+            self.registros.flags["D"] = 0
         if integer_part == 0 and result != 0:
             self.registros.flags["U"] = 1
         else:
@@ -53,9 +53,9 @@ class Alu:
     def mul(self, a, b):
         raw = a * b
         if raw > MAX_INT or raw < MIN_INT:
-            self.registros.flags["O"] = 1
+            self.registros.flags["D"] = 1
         else:
-            self.registros.flags["O"] = 0
+            self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
         result = raw & WORD_MASK
         self.update_flags(result)
@@ -66,9 +66,9 @@ class Alu:
             raise Exception("Divide by zero")
         raw = a // b
         if raw > MAX_INT or raw < MIN_INT:
-            self.registros.flags["O"] = 1
+            self.registros.flags["D"] = 1
         else:
-            self.registros.flags["O"] = 0
+            self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
         result = raw & WORD_MASK
         self.update_flags(result)
@@ -111,28 +111,28 @@ class Alu:
 
     def and_op(self, a, b):
         result = (a & b) & WORD_MASK
-        self.registros.flags["O"] = 0
+        self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
         self.update_flags(result)
         return result
 
     def or_op(self, a, b):
         result = (a | b) & WORD_MASK
-        self.registros.flags["O"] = 0
+        self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
         self.update_flags(result)
         return result
 
     def xor_op(self, a, b):
         result = (a ^ b) & WORD_MASK
-        self.registros.flags["O"] = 0
+        self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
         self.update_flags(result)
         return result
 
     def not_op(self, a):
         result = (~a) & WORD_MASK
-        self.registros.flags["O"] = 0
+        self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
         self.update_flags(result)
         return result
@@ -145,9 +145,9 @@ class Alu:
         original_sign = (a >> 63) & 1
         result_sign = (result >> 63) & 1
         if original_sign != result_sign:
-            self.registros.flags["O"] = 1
+            self.registros.flags["D"] = 1
         else:
-            self.registros.flags["O"] = 0
+            self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
         self.update_flags(result)
         return result
@@ -159,7 +159,7 @@ class Alu:
             a_signed = a
         raw = a_signed >> n
         result = raw & WORD_MASK
-        self.registros.flags["O"] = 0
+        self.registros.flags["D"] = 0
         self.registros.flags["U"] = 0
         self.update_flags(result)
         return result
