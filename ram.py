@@ -20,7 +20,7 @@ class RAM:
             "8":  (np.int8, 2**8 - 1),
             "16": (np.int16, 2**16 - 1),
             "32": (np.int32, 2**32 - 1),
-            "64": (np.int64, 2**64 - 1)
+            "64": (np.uint64, 2**64 - 1)
         }
         T, max_uint = word_s_info.get(word_size, np.int64)
         self._num_pos = positions
