@@ -5,7 +5,9 @@ class Registers:
     self.SP = 0
     self.BP = 0
     self.IR = 0
-  
+    #Interfaz Memoria 
+    self.MAR = 0
+    self.MDR = 0
     #Registros Generales
     self.general = {"RA": 0, "RB": 0, "RC": 0,"RD": 0, "RE": 0,
             "R1": 0, "R2": 0, "R3": 0,"R4": 0, "R5": 0}
