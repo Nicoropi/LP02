@@ -1,0 +1,61 @@
+# Fibonacci: fib(10) = 55
+# Resultado esperado: RB = 55
+#
+# Algoritmo (sección 9.2):
+#   01 LOAD_INT RA, 0         f0 = 0
+#   02 LOAD_INT RB, 1         f1 = 1
+#   03 LOAD_INT RC, 10        n = 10
+#   04 LOAD_INT RD, 0         i = 0  (contador)
+#   05 COMP RC, RD             (¿n == i ya?)
+#   06 JMP_NORZ {ffor=12}     Si n > i ?... NO, NORZ salta si N=0 y Z=0
+#                              Cuando RC-RD>0, Z=0 y N=0 → NORZ=1 → NO saltar aún
+#                              Necesitamos saltar cuando RC<=RD, es decir no NORZ
+#                              Revisando: JMPNN salta si N=0 (RC >= RD)
+#                              Usamos: si RC == RD (Z=1) → saltar fuera
+#                              Ajustamos: usamos JMPZ para salir del loop
+#   05 COMP RC, RD             (RC - RD → si Z=1, son iguales → salir)
+#   06 JMPZ {ffor=12}         addr=12
+#   07 ADD RE, RA, RB         f = f0 + f1
+#   08 MOV RA, RB             f0 = f1
+#   09 MOV RB, RE             f1 = f
+#   10 INC RD                 i++
+#   11 COMP RC, RD             re-comparar
+#   12 JMPNZ {for=6}          si Z=0, seguir  (addr 6)
+#   13 HLT
+#
+# Registros: RA=0101, RB=0110, RC=0111, RD=1000, RE=1001
+# LOAD_INT:  1001 xxxx [56b value]
+# COMP X,Y:  0..0010_0001_xxxx_yyyy
+# JMPZ:      0000_0010 [56b addr]
+# JMPNZ:     0000_0011 [56b addr]
+# ADD X,W,Y: 0..0001_xxxx_wwww_yyyy
+# MOV X,Y:   1100 0..0 xxxx yyyy
+# INC X:     0..0001_0010_xxxx
+# HLT:       all 1s
+#
+# Instrucción 00: LOAD_INT RA, 0
+1001010100000000000000000000000000000000000000000000000000000000
+# Instrucción 01: LOAD_INT RB, 1
+1001011000000000000000000000000000000000000000000000000000000001
+# Instrucción 02: LOAD_INT RC, 10
+1001011100000000000000000000000000000000000000000000000000001010
+# Instrucción 03: LOAD_INT RD, 0
+1001100000000000000000000000000000000000000000000000000000000000
+# Instrucción 04: COMP RC, RD → 0..0010_0001_0111_1000
+0000000000000000000000000000000000000000000000000010000101111000
+# Instrucción 05: JMPZ addr=12 → 0000_0010_0...01100
+0000001000000000000000000000000000000000000000000000000000001100
+# Instrucción 06: ADD RE, RA, RB → 0..0001_1001_0101_0110
+0000000000000000000000000000000000000000000000000001100101010110
+# Instrucción 07: MOV RA, RB → 1100 0..0 0101 0110
+1100000000000000000000000000000000000000000000000000000001010110
+# Instrucción 08: MOV RB, RE → 1100 0..0 0110 1001
+1100000000000000000000000000000000000000000000000000000001101001
+# Instrucción 09: INC RD → 0..0001_0010_1000
+0000000000000000000000000000000000000000000000000000000100101000
+# Instrucción 10: COMP RC, RD
+0000000000000000000000000000000000000000000000000010000101111000
+# Instrucción 11: JMPNZ addr=6 → 0000_0011_0...00110
+0000001100000000000000000000000000000000000000000000000000000110
+# Instrucción 12: HLT
+1111111111111111111111111111111111111111111111111111111111111111
