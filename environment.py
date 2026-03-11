@@ -1,10 +1,10 @@
 import sys
 
-from ram      import RAM
-from register import Registers
-from alu_2    import Alu
-from cpu      import CPU
-from loader   import Loader
+from pc.ram      import RAM
+from pc.register import Registers
+from pc.alu_2    import Alu
+from pc.cpu      import CPU
+from pc.loader   import Loader
 
 MAX_RAM = 2 ** 16
 

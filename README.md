@@ -28,9 +28,9 @@ de la referida tarea donde se presentan los diseños del computador propuesto.
 
 * Ambiente
 * CPU
-* ALU (?)
-* Unidad de Control
+* ALU 
 * Ram
+* Registros
 * Cargador
 
 ## Diseño
@@ -39,83 +39,6 @@ de la referida tarea donde se presentan los diseños del computador propuesto.
 
 ## TODO list
 
-🧱 A. Definición del modelo (antes de programar)
-
-- Definir tamaño total de la RAM (número de palabras).
-- Definir si la RAM es direccionable por byte o por palabra.
-
-Definir número de bits del opcode.
-
-Definir número de bits del operando.
-
-🧠 B. Memoria RAM
-
-- Crear estructura para almacenar la RAM.
-- Inicializar RAM en cero.
-- Implementar lectura de una palabra de RAM.
-- Implementar escritura de una palabra completa en RAM.
-- Implementar lectura de un bit específico.
-- Implementar escritura de un bit específico.
-- Validar direcciones fuera de rango.
-- Validar índices de bit fuera de rango.
-
-🧾 C. Registros
-
-- Crear registro PC.
-- Inicializar PC en cero.
-- Crear registro(s) de propósito general (ej. ACC).
-- Inicializar registros en cero.
-- Implementar lectura de registros.
-- Implementar escritura de registros.
-
-📥 D. Cargador (Loader)
-
-- Leer archivo de texto/binario línea por línea.
-- Convertir cada línea a valor binario interno.
-- Cargar instrucciones en RAM desde dirección inicial.
-- Permitir cargar datos (no solo instrucciones).
-- Detectar overflow de RAM al cargar.
-- Reiniciar PC después de cargar.
-
-🔄 E. Ciclo de instrucción
-
-- Implementar fetch:
-- Leer instrucción desde RAM[PC].
-- Incrementar PC.
-- Implementar decode:
-- Separar opcode.
-- Separar operando.
-- Implementar execute:
-- Ejecutar instrucción según opcode.
-
-⚙️ F. Implementación de instrucciones 
-
-- Implementar instrucciones una a una
-- Validar operandos de cada instrucción.
-- Actualizar registros tras cada instrucción.
-
-⏯️ G. Control de ejecución
-
-- Implementar ejecución de una sola instrucción.
--Detectar instrucción HALT.
-- Detener ejecución al encontrar HALT.
-- Evitar ejecución fuera de RAM.
-- Reiniciar estado de ejecución.
-
-🧪 H. Pruebas internas
-
-- Probar lectura/escritura de RAM.
-- Probar escritura de bits individuales.
-- Probar carga correcta de programas.
-- Probar ejecución de una instrucción.
-- Probar ejecución completa de un programa.
-- Verificar resultados esperados (Tarea 9).
-- Probar casos inválidos (direcciones incorrectas).
-
-🧩 I. Integración final
-
-- Conectar RAM + registros + CPU.
-- Verificar coherencia entre módulos.
-- Ejecutar programas de prueba completos.
-- Documentar comportamiento esperado.
-- Congelar versión final del simulador.
+- verificar campos de entrada
+- agregar campo de entrada para ejecución paso por paso
+- implementar interfaz (?)
