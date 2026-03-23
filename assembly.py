@@ -65,15 +65,20 @@ def parse_reg(tok):
 
 def collect_labels(lines):
     labels = {}
-    addr = 0
+    instr_addr = 0        
+
     for line in lines:
-        s = line.split("#", 1)[0].strip()
-        if not s:
+        line = line.split('#', 1)[0].strip()
+        if not line:
             continue
-        if s.endswith(":"):
-            labels[s[:-1]] = addr
-            continue
-        addr += 1
+
+        if line.startswith('{') and line.endswith('}'):
+            name = line[1:-1].strip()
+            labels[name] = instr_addr     
+            continue                    
+
+        instr_addr += 1
+
     return labels
 
 def encode_line(mnemonic, operands, labels):
@@ -167,7 +172,8 @@ def main():
     for idx, line in enumerate(lines, 1):
         s = line.split('#', 1)[0].strip()
         if not s: continue
-        if s.endswith(':'): continue
+        if s.startswith('{') and s.endswith('}'): continue
+
         parts = s.replace(',', ' ').split()
         mnemonic = parts[0]
         ops = parts[1:]
