@@ -150,8 +150,8 @@ class CPU:
             return
 
         # LOAD MEM X, Y — X <- MEM[Y]
-        # Binario: 0000 1010 xxxx yyyy 0...0
-        if opcode8 == 0x0A:
+        # Binario: 1010 xxxx yyyy 0...0
+        if opcode8 == 0xA:
             reg_x = (instr >> 52) & 0xF
             reg_y = (instr >> 48) & 0xF
             value = self.read_memory(self.get_reg(reg_y))
