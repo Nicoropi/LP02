@@ -148,12 +148,18 @@ class CPU:
             if not (self.reg.flags["N"] and self.reg.flags["Z"]):
                 self.reg.PC = jump_addr
             return
+        # JMP REG - salta a la direccion del registro
+        if opcode8 == 0x11:
+            reg_x = (instr >> 52) & 0xF
+            self.reg.PC = self.get_reg(reg_x)
+            return
 
         # LOAD MEM X, Y — X <- MEM[Y]
-        # Binario: 1010 xxxx yyyy 0...0
+        # Binario: 0000 1010 xxxx yyyy 0...0
         if opcode8 == 0xA:
             reg_x = (instr >> 52) & 0xF
             reg_y = (instr >> 48) & 0xF
+            print(f"LOD {reg_y}: {self.get_reg(reg_y)}")
             value = self.read_memory(self.get_reg(reg_y))
             self.set_reg(reg_x, value)
             return
@@ -167,6 +173,7 @@ class CPU:
         if opcode4 == 0x8:
             reg_x = (instr >> 56) & 0xF
             reg_y = (instr >> 52) & 0xF
+            print(f"STOR into {reg_y}: {self.get_reg(reg_y)} value {reg_x}: {self.get_reg(reg_x)}")
             self.write_memory(self.get_reg(reg_y), self.get_reg(reg_x))
             return
 
@@ -286,7 +293,7 @@ class CPU:
                     self.get_reg((instr >> 4) & 0xF), self.get_reg(instr & 0xF))
                 self.set_reg(rx, result)
                 return
-
+ 
             if logic_id == 0x2 and marker_32 == 0:
                 # OR X, W, Y
                 rx = (instr >> 8) & 0xF
