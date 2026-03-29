@@ -18,7 +18,8 @@ INSTRUCTION = {
     "JMPUND":   ["jmp", 0x07],
     "JMPNORZ":  ["jmp", 0x08],
     "JMPNANDZ": ["jmp", 0x09],
-    "LOADMEM":  ["r_m", 0xA],
+    "JMPR":     ["jmp", 0x11],
+    "LOADMEM":  ["r_m", 0x0A],
     "LDINT":    ["r_m", 0x9],
     "LDFLT":    ["r_m", 0xB],
     "MOV":      ["r_r", 0xC0000000000000],
@@ -46,9 +47,9 @@ INSTRUCTION = {
     "DEC":      ["reg", 0x000000000000011],
     "INC":      ["reg", 0x000000000000012],
 
-    "STOR": ["m_r", 0x08],
-    "STRINT": ["m_m", 0xA],
-    "STRFLT": ["m_m", 0xE],
+    "STOR":     ["m_r", 0x8],
+    "STRINT":   ["m_m", 0xA],
+    "STRFLT":   ["m_m", 0xE],
 }
 
 def parse_num(tok):
@@ -93,6 +94,10 @@ def encode_line(mnemonic, operands, labels):
     
     if mode == "jmp":
         word = base << 56
+        if mnemonic == "JMPR":
+            reg = parse_reg(operands[0]) if operands else 0
+            word |= reg << 52
+            return word
         addr = 0
         
         if operands:
@@ -104,6 +109,12 @@ def encode_line(mnemonic, operands, labels):
     if mode == "r_m":
         word = base << 60
         reg = parse_reg(operands[0]) if operands else 0
+        if mnemonic == "LOADMEM":
+            word >>= 4
+            word |= (reg & 0xF) << 52
+            reg = parse_reg(operands[1]) if len(operands) > 1 else 0
+            word |= (reg & 0xF) << 48
+            return word
         mem = 0
 
         if len(operands) > 1:
@@ -115,9 +126,16 @@ def encode_line(mnemonic, operands, labels):
         return word
 
     if mode == "m_r":
-        word = base << 56
-        mem = parse_num(operands[0]) if operands else 0
-        reg = parse_reg(operands[1]) if len(operands) > 1 else 0
+        word = base << 60
+        reg = parse_reg(operands[0]) if operands else 0
+        
+        if mnemonic == "STOR":
+            word |= (reg & 0xF) << 56
+            reg = parse_reg(operands[1]) if len(operands) > 1 else 0
+            word |= (reg & 0xF) << 52
+            return word
+        
+        mem = parse_num(operands[1]) if len(operands) > 1 else 0
 
         word |= (mem & ((1 << 56) - 1)) << 4
         word |= (reg & 0xF)
