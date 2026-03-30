@@ -6,6 +6,7 @@ from pc.alu_2    import Alu
 from pc.cpu      import CPU
 from pc.loader   import Loader
 from pc.linker   import SimpleBinLinker, write_bin
+from pc.fpu import FPU
 
 MAX_RAM = 2 ** 16
 
@@ -21,7 +22,8 @@ def main():
 
     ram  = RAM(word_size="64", positions=MAX_RAM)
     reg  = Registers()
-    alu  = Alu(reg)
+    fpu = FPU(reg)
+    alu  = Alu(reg, fpu)
     cpu  = CPU(ram, reg, alu)
 
     # Enlazado estático entre varios .bin
