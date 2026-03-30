@@ -9,6 +9,18 @@ try:
 except Exception:
     GLOBAL_PALETTE = {}
 
+# ====================================#
+#              Functions              #
+# ====================================#
+def on_assemble():
+    pass
+
+def on_load():
+    pass
+
+def on_assemble_load():
+    on_assemble()
+    on_load()
 
 def build_code_tab(parent):
     frame = parent
@@ -25,9 +37,9 @@ def build_code_tab(parent):
     )
     top_bar.configure(fg_color=color02)
 
-    btn_assm = ctk.CTkButton(top_bar, text="Assemble", command=on_assemble)
-    btn_load = ctk.CTkButton(top_bar, text="Load File", command=on_load)
-    btn_both = ctk.CTkButton(top_bar, text="Assemble & Load", command=on_assemble_load)
+    btn_assm = ctk.CTkButton(top_bar, text="Assemble", command=on_assemble())
+    btn_load = ctk.CTkButton(top_bar, text="Load File", command=on_load())
+    btn_both = ctk.CTkButton(top_bar, text="Assemble & Load", command=on_assemble_load())
     btn_assm.pack(side="right", padx=6, pady=6)
     btn_load.pack(side="right", padx=6, pady=6)
     btn_both.pack(side="right", padx=6, pady=6)
@@ -48,18 +60,5 @@ def build_code_tab(parent):
     bin_box.pack(fill="both", expand=True, padx=2, pady=2)
     bin_box.configure(state="disabled")  # read-only by default
     bin_box.insert("1.0", "")
-
-    # ====================================#
-    #              Functions              #
-    # ====================================#
-    def on_assemble():
-        pass
-
-    def on_load():
-        pass
-
-    def on_assemble_load():
-        on_assemble()
-        on_load()
 
     return frame
