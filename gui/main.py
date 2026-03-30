@@ -60,7 +60,7 @@ class VIC_GUI(ctk.CTk):
                         "background": PALETTE["color02"],
                     }
                 },
-                "TFrame": {"configure": {"background": PALETTE["color05"]}},
+                "TFrame": {"configure": {"background": PALETTE["color02"]}},
                 "TNotebook": {
                     "configure": {
                         "background": PALETTE["color01"],
@@ -88,24 +88,6 @@ def run_gui():
     app.mainloop()
 
 
-# # Lightweight color palette persistence
-# PALETTE_DEFAULT = {
-#     "color1": "#0A2548",
-#     "color2": "#1A2D4E",
-#     "color3": "#263653",
-#     "color4": "#323E59",
-#     "color50": "#EEF1F6",
-#     "color100": "#D1D8E6",
-#     "color200": "#B3C0D6",
-#     "color300": "#95A7C6",
-#     "color400": "#778EB6",
-#     "color500": "#5975A6",
-#     "color600": "#496088",
-#     "color700": "#394B6A",
-#     "color800": "#29364C",
-#     "color900": "#1A2230",
-#     "color950": "#090C11",
-# }
 
 # class ComputerSimulatorGUI(ctk.CTk):
 #     def __init__(self, *args, **kwargs):
@@ -165,14 +147,6 @@ def run_gui():
 #     except Exception:
 #         pass
 
-# def _apply_palette(self):
-#     # Set global window background to color800 if available
-#     try:
-#         self.configure(bg=self.palette.get("color800", PALETTE["color800"]))
-#     except Exception:
-#         pass
-#
-
 # def _toggle_ram_window(self):
 #     # Lazy RAM viewer window
 #     if self._ram_window is None or not self._ram_window.winfo_exists():
@@ -192,96 +166,3 @@ def run_gui():
 #         lines.append(f"0x{(i * 4):08X}: 0x{val:08X}")
 #     self._ram_box.delete("1.0", "end")
 #     self._ram_box.insert("1.0", "\n".join(lines))
-
-#     def _apply_palette(self):
-#         # Best-effort palette application for CTk widgets
-#         try:
-#             # Background of the main window uses color800 (800-series)
-#             self.configure(
-#                 bg_color=self.palette.get("color100", PALETTE_DEFAULT["color100"])
-#             )
-#         except Exception:
-#             pass
-#         try:
-#             self.top_bar.configure(
-#                 bg_color=self.palette.get("color2", PALETTE_DEFAULT["color2"])
-#             )
-#         except Exception:
-#             pass
-#         # Style buttons to use color2 as their fill color
-#         try:
-#             self.btn_assembler.configure(
-#                 fg_color=self.palette.get("color2", PALETTE_DEFAULT["color2"])
-#             )
-#         except Exception:
-#             pass
-#         try:
-#             self.btn_load.configure(
-#                 fg_color=self.palette.get("color2", PALETTE_DEFAULT["color2"])
-#             )
-#         except Exception:
-#             pass
-#         try:
-#             self.btn_both.configure(
-#                 fg_color=self.palette.get("color2", PALETTE_DEFAULT["color2"])
-#             )
-#         except Exception:
-#             pass
-#         # Text areas: no outline, color1 background
-#         try:
-#             # Text areas use color1 as background with no outline
-#             self.asm_box.configure(
-#                 fg_color=self.palette.get("color1", PALETTE_DEFAULT["color1"]),
-#                 border_width=0,
-#             )
-#         except Exception:
-#             pass
-#         try:
-#             self.bin_box.configure(
-#                 fg_color=self.palette.get("color1", PALETTE_DEFAULT["color1"]),
-#                 border_width=0,
-#             )
-#         except Exception:
-#             pass
-
-#     def on_assemble(self):
-#         text = self.asm_box.get("1.0", "end-1c")
-#         self._assemble_text(text)
-
-#     def _assemble_text(self, text):
-#         lines = [l.strip() for l in text.splitlines() if l.strip()]
-#         results = []
-#         for line in lines:
-#             digest = hashlib.sha256(line.encode("utf-8")).hexdigest()[:16].upper()
-#             results.append(digest)
-#         self.bin_box.delete("1.0", "end")
-#         self.bin_box.insert("1.0", "\n".join(results))
-
-#     def on_load(self):
-#         path = filedialog.askopenfilename(
-#             title="Load Binary",
-#             filetypes=[
-#                 ("Binary files", "*.bin"),
-#                 ("All files", "*.*"),
-#                 ("Hex", "*.hex"),
-#             ],
-#         )
-#         if not path:
-#             return
-#         with open(path, "rb") as f:
-#             b = f.read()
-#         hexs = " ".join(f"{byte:02X}" for byte in b)
-#         self.bin_box.delete("1.0", "end")
-#         self.bin_box.insert("1.0", hexs)
-
-#     def on_assemble_load(self):
-#         self.on_assemble()
-#         self.on_load()
-
-#     def _on_close(self):
-#         self.destroy()
-
-
-# def run_gui():
-#     app = ComputerSimulatorGUI()
-#     app.mainloop()
