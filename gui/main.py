@@ -7,7 +7,8 @@ import tkinter.ttk as ttk
 import customtkinter as ctk
 
 from .tabs.code_tab import build_code_tab
-from .tabs.memory_tab import build_memory_tab
+from .tabs.memory_tab import build_memory_tab, update_memory_tab
+from .pc_bridge import PCBridge
 
 PALETTE = {
     # Base color palette (custom theme)
@@ -33,6 +34,9 @@ class VIC_GUI(ctk.CTk):
 
         self.palette = PALETTE
 
+        # Initialize PC bridge for GUI interaction with the PC emulation
+        self.pc_bridge = PCBridge()
+
         # ====================================#
         #               Tab Bar               #
         # ====================================#
@@ -42,11 +46,20 @@ class VIC_GUI(ctk.CTk):
 
         self.code_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.code_tab, text=" Code ")
-        build_code_tab(self.code_tab)
+        build_code_tab(self.code_tab, pc_bridge=self.pc_bridge)
 
         self.ram_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.ram_tab, text="    PC    ")
-        build_memory_tab(self.ram_tab)
+        build_memory_tab(self.ram_tab, pc_bridge=self.pc_bridge)
+
+        # Start periodic refresh loop to push PC state to the memory tab
+        self.after(50, self._refresh_loop)
+
+    # Load program moved to memory tab; no inline method here
+    def _refresh_loop(self):
+        state = self.pc_bridge.get_state()
+        update_memory_tab(state)
+        self.after(50, self._refresh_loop)
 
     def _setup_notebook_style(self):
         style = ttk.Style()
@@ -86,7 +99,6 @@ class VIC_GUI(ctk.CTk):
 def run_gui():
     app = VIC_GUI()
     app.mainloop()
-
 
 
 # class ComputerSimulatorGUI(ctk.CTk):
