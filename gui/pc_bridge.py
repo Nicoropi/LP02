@@ -1,5 +1,8 @@
 MAX_RAM = 2**16
 
+# Window size (in RAM words) to render in the UI by default.
+RAM_WINDOW_WORDS = 256
+
 
 class PCBridge:
     def __init__(self, base_addr: int = 0):
@@ -16,14 +19,12 @@ class PCBridge:
         self.reg = Registers()
         self.alu = Alu(self.reg)
         self.cpu = CPU(self.ram, self.reg, self.alu)
+
         self._base_addr = base_addr
         self.loader = Loader(start_address=base_addr)
 
     def load_program(self, path: str, base_addr: int = 0) -> int:
         """Load a program into RAM and initialize PC/SP. Returns entry point."""
-        from pc.loader import Loader
-
-        self.loader = Loader(start_address=base_addr)
         entry = self.loader.load(path, self.ram)
         self.reg.PC = entry
         self.reg.SP = MAX_RAM - 1
@@ -57,8 +58,7 @@ class PCBridge:
         ram_start = 0
         try:
             if hasattr(self.ram, "request"):
-                # Determine a window around the program counter
-                window = 256
+                window = RAM_WINDOW_WORDS
                 pc_val = regs.get("PC", 0)
                 start = 0
                 if isinstance(pc_val, int):

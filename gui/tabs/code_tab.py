@@ -1,9 +1,9 @@
 import hashlib
-from tkinter import filedialog
 import os
 
 import tkinter as tk
 import customtkinter as ctk
+import tkinter.simpledialog as simpledialog
 
 try:
     from ..main import PALETTE as GLOBAL_PALETTE
@@ -35,7 +35,7 @@ def get_bin_box_text():
     return ""
 
 
-def _load_program_from_bin_text(pc_bridge):
+def load_program(pc_bridge):
     # Load program directly from the content of the bin_box (hex bytes text)
     try:
         bin_text = get_bin_box_text()
@@ -43,34 +43,22 @@ def _load_program_from_bin_text(pc_bridge):
         bin_text = ""
     if not bin_text or not bin_text.strip():
         return
-    data = bytearray()
-    for line in bin_text.splitlines():
-        for token in line.strip().split():
-            t = token.strip().strip(",")
-            if t.startswith("0x") or t.startswith("0X"):
-                try:
-                    val = int(t, 16)
-                    data.append(val & 0xFF)
-                except Exception:
-                    pass
-            else:
-                if all(ch in "0123456789abcdefABCDEF" for ch in t) and len(t) <= 2:
-                    try:
-                        val = int(t, 16)
-                        data.append(val & 0xFF)
-                    except Exception:
-                        pass
-    if len(data) == 0:
+
+    # Treat bin_text as raw binary data (latin-1 encoding preserves byte values 0-255)
+    data_bytes = None
+    if bin_text:
+        data_bytes = bin_text.encode("latin-1")
+    if not data_bytes or len(data_bytes) == 0:
         return
+
     import tempfile, os
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as tmp:
-        tmp.write(bytes(data))
+        tmp.write(data_bytes)
         tmp_path = tmp.name
+
     base_addr = 0
     try:
-        import tkinter.simpledialog as simpledialog
-
         addr = simpledialog.askinteger(
             "Base address", "Base address (default 0):", initialvalue=0
         )
@@ -87,11 +75,6 @@ def _load_program_from_bin_text(pc_bridge):
             os.remove(tmp_path)
         except Exception:
             pass
-
-
-def load_program_from_bin_text(pc_bridge):
-    """Public wrapper for loading program from the code tab's bin text."""
-    return _load_program_from_bin_text(pc_bridge)
 
 
 def build_code_tab(parent, pc_bridge=None):
@@ -135,8 +118,7 @@ def build_code_tab(parent, pc_bridge=None):
             bin_box.configure(state="disabled")
 
     def on_load():
-        if pc_bridge is not None:
-            _load_program_from_bin_text(pc_bridge)
+        load_program(pc_bridge)
 
     def on_assemble_load():
         on_assemble()

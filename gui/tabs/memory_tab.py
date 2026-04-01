@@ -50,7 +50,7 @@ def build_memory_tab(parent, pc_bridge=None):
     _reg_box.configure(state="disabled")
 
     # Flags box (below registers)
-    flags_box = ctk.CTkTextbox(left_col, width=300, height=120)
+    flags_box = ctk.CTkTextbox(left_col, width=400, height=120)
     flags_box.pack(fill="x", pady=(8, 8), padx=8)
     flags_box.insert("1.0", "FLAGS\n")
     flags_box.configure(state="disabled")
@@ -65,16 +65,13 @@ def build_memory_tab(parent, pc_bridge=None):
     _pc_sp_label = ctk.CTkLabel(right_col, text="PC: 0  SP: 0", anchor="w")
     _pc_sp_label.pack(fill="x", padx=6, pady=(6, 0))
 
-    _ram_box = ctk.CTkTextbox(right_col, width=580, height=260)
-    _ram_box.pack(fill="both", expand=True, padx=6, pady=6)
+    # RAM: container with horizontal scrollbar for binary-like 64-bit words
+    ram_frame = ctk.CTkFrame(right_col)
+    ram_frame.pack(fill="both", expand=True, padx=6, pady=6)
+    _ram_box = ctk.CTkTextbox(ram_frame, width=580, height=260)
+    _ram_box.pack(fill="both", expand=True, padx=0, pady=0)
     _ram_box.insert("1.0", "RAM view (placeholder)\n")
-    _ram_box.configure(state="disabled")
-
-    # Optional: Binary view area (kept for compatibility with existing code)
-    _bin_box = ctk.CTkTextbox(frame, width=580, height=260)
-    _bin_box.pack(fill="both", expand=True, padx=8, pady=8)
-    _bin_box.insert("1.0", "Binary view (placeholder)\n")
-    _bin_box.configure(state="disabled")
+    _ram_box.configure(state="disabled", wrap="none")
 
     return frame
 
@@ -124,20 +121,17 @@ def update_memory_tab(state: dict):
             _reg_box.insert("1.0", "Registers view (placeholder)\n")
             _reg_box.configure(state="disabled")
 
-    # RAM dump (simple hex view)
+    # RAM dump (display as 64-bit words, 64-bit binary per word)
     ram = state.get("ram")
     ram_start = state.get("ram_start", 0)
     if _ram_box is not None:
         _ram_box.configure(state="normal")
         if isinstance(ram, (list, tuple)) and len(ram) > 0:
-            # Build a compact hex dump: 16 bytes per line
-            bytes_per_line = 16
             lines = []
-            for i in range(0, len(ram), bytes_per_line):
-                chunk = ram[i : i + bytes_per_line]
-                hex_bytes = " ".join(f"{b:02X}" for b in chunk)
-                abs_addr = ram_start + i
-                lines.append(f"{abs_addr:04X}: {hex_bytes}")
+            for idx, word in enumerate(ram):
+                if isinstance(word, int):
+                    abs_addr = ram_start + idx
+                    lines.append(f"{abs_addr:04X}: {word & ((1 << 64) - 1):064b}")
             _ram_box.delete("1.0", "end")
             _ram_box.insert("1.0", "\n".join(lines))
         else:

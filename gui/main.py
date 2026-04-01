@@ -33,8 +33,6 @@ class VIC_GUI(ctk.CTk):
         self.geometry("1200x700")
 
         self.palette = PALETTE
-
-        # Initialize PC bridge for GUI interaction with the PC emulation
         self.pc_bridge = PCBridge()
 
         # ====================================#
@@ -61,6 +59,9 @@ class VIC_GUI(ctk.CTk):
         update_memory_tab(state)
         self.after(50, self._refresh_loop)
 
+    # ====================================#
+    #             Tab Style               #
+    # ====================================#
     def _setup_notebook_style(self):
         style = ttk.Style()
 
@@ -99,82 +100,3 @@ class VIC_GUI(ctk.CTk):
 def run_gui():
     app = VIC_GUI()
     app.mainloop()
-
-
-# class ComputerSimulatorGUI(ctk.CTk):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.title("Simple Computer Simulator GUI")
-#         self.geometry("1200x700")
-
-#         # Load palette (will apply after UI is built)
-#         self.palette = load_palette()
-
-#         # Top action bar with three buttons
-#         self.top_bar = ctk.CTkFrame(self, height=60, corner_radius=0)
-#         self.top_bar.pack(side="top", fill="x")
-
-#         self.btn_assembler = ctk.CTkButton(
-#             self.top_bar, text="Assembler", command=self.on_assemble
-#         )
-#         self.btn_load = ctk.CTkButton(self.top_bar, text="Load", command=self.on_load)
-#         self.btn_both = ctk.CTkButton(
-#             self.top_bar, text="Assembler & Load", command=self.on_assemble_load
-#         )
-
-#         self.btn_assembler.pack(side="left", padx=6, pady=12)
-#         self.btn_load.pack(side="left", padx=6, pady=12)
-#         self.btn_both.pack(side="left", padx=6, pady=12)
-
-#         # Main content: two panels side-by-side
-#         self.main = ctk.CTkFrame(self, corner_radius=0)
-#         self.main.pack(fill="both", expand=True)
-
-#         self.left_frame = ctk.CTkFrame(self.main, width=600, corner_radius=6)
-#         self.right_frame = ctk.CTkFrame(self.main, width=600, corner_radius=6)
-#         self.left_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
-#         self.right_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
-
-#         # Text areas
-#         self.asm_box = ctk.CTkTextbox(self.left_frame, width=580, height=520)
-#         self.asm_box.pack(fill="both", expand=True, padx=2, pady=2)
-
-#         self.bin_box = ctk.CTkTextbox(self.right_frame, width=580, height=520)
-#         self.bin_box.pack(fill="both", expand=True, padx=2, pady=2)
-
-#         # Close handling to persist palette
-#         self.protocol("WM_DELETE_WINDOW", self._on_close)
-#         # Apply the color palette now that widgets exist
-#         self._apply_palette()
-
-#     # Initialize RAM view state (placeholder for a RAM model)
-#     self._ram = [0] * 1024
-#     self._ram_window = None
-#     # Small control to open RAM view (optional helper window)
-#     try:
-#         self._ram_button = ctk.CTkButton(
-#             self.main, text="RAM View", command=self._toggle_ram_window
-#         )
-#         self._ram_button.pack(side="top", anchor="ne", padx=8, pady=8)
-#     except Exception:
-#         pass
-
-# def _toggle_ram_window(self):
-#     # Lazy RAM viewer window
-#     if self._ram_window is None or not self._ram_window.winfo_exists():
-#         self._ram_window = tk.Toplevel(self)
-#         self._ram_window.title("RAM Viewer")
-#         self._ram_box = ctk.CTkTextbox(self._ram_window, width=580, height=320)
-#         self._ram_box.pack(fill="both", expand=True, padx=8, pady=8)
-#         self._update_ram_view()
-#     else:
-#         self._ram_window.lift()
-
-# def _update_ram_view(self):
-#     if not hasattr(self, "_ram_box"):
-#         return
-#     lines = []
-#     for i, val in enumerate(self._ram):
-#         lines.append(f"0x{(i * 4):08X}: 0x{val:08X}")
-#     self._ram_box.delete("1.0", "end")
-#     self._ram_box.insert("1.0", "\n".join(lines))
