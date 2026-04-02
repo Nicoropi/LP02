@@ -112,14 +112,3 @@ class PCBridge:
             "ram_start": ram_start,
             "flags": normalized,
         }
-
-    def step(self) -> None:
-        # Try to perform a single instruction step if supported by CPU
-        try:
-            if hasattr(self.cpu, "step"):
-                self.cpu.step()
-            elif hasattr(self.cpu, "run"):
-                # Run a single instruction if API supports it
-                self.cpu.run(1)
-        except Exception:
-            pass

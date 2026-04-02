@@ -2,21 +2,6 @@ import tkinter as tk
 from tkinter import filedialog
 import customtkinter as ctk
 
-
-# Memory tab: shows PC state, Registers and RAM dump.
-#
-# Public API:
-# - build_memory_tab(parent) -> frame
-# - update_memory_tab(state: dict) -> None
-# +
-# State shape (example):
-# {
-#   "pc": 1234,
-#   "sp": 65530,
-#   "regs": {"R0": 0x0, "R1": 0x1, ...},
-#   "ram": [0x00, 0x01, ..., 0xFF]
-# }
-
 _reg_box = None
 _pc_sp_label = None
 _ram_box = None
@@ -32,6 +17,13 @@ def _hex(n: int, width: int = 2) -> str:
 def build_memory_tab(parent, pc_bridge=None):
     global _reg_box, _pc_sp_label, _ram_box, _bin_box, _flags_box
     frame = parent
+    # ====================================#
+    #             Functions               #
+    # ====================================#
+    def on_run():
+        if pc_bridge._loaded:
+            print(pc_bridge.reg.PC)
+            pc_bridge.cpu.run()
 
     # ====================================#
     #         Registers and Flags         #
@@ -62,8 +54,16 @@ def build_memory_tab(parent, pc_bridge=None):
     right_col = ctk.CTkFrame(frame)
     right_col.pack(side="left", fill="both", expand=True, padx=8, pady=8)
 
-    _pc_sp_label = ctk.CTkLabel(right_col, text="PC: 0  SP: 0", anchor="w")
-    _pc_sp_label.pack(fill="x", padx=6, pady=(6, 0))
+    top_bar = ctk.CTkFrame(right_col, fg_color="#2b2b2b")
+    top_bar.pack(fill="x", padx=6, pady=(6, 0))
+
+    top_bar.grid_columnconfigure(0, weight=1)
+
+    _pc_sp_label = ctk.CTkLabel(top_bar, text="PC: 0  SP: 0", anchor="w")
+    _pc_sp_label.grid(row=0, column=0, sticky="w")
+
+    run_btn = ctk.CTkButton(top_bar, text="run", command=on_run)
+    run_btn.grid(row=0, column=1, sticky="e")
 
     # RAM: container with horizontal scrollbar for binary-like 64-bit words
     ram_frame = ctk.CTkFrame(right_col)
