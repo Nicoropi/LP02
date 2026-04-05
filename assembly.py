@@ -1,241 +1,531 @@
 import sys
+from ply import lex
+from enum import Enum, auto
+from struct import pack #para conversion a binario
+
+class ParamType(Enum):
+    _   = auto()    #sin parametros
+    r   = auto()    #un registro
+    rr  = auto()    #dos registros
+    rrr = auto()    #tres registros
+    i   = auto()    #un entero
+    ri  = auto()    #un registro y un entero
+    rf  = auto()    #un registro y un flotante
+    
+    @classmethod
+    def len(cls, enumerated: int):
+        if enumerated == cls._:
+            return 0
+        elif enumerated in [cls.r, cls.i]:
+            return 1
+        elif enumerated in [cls.rr, cls.ri, cls.rf]:
+            return 2
+        elif enumerated == cls.rrr:
+            return 3
+    
+    @classmethod
+    def correctParam(cls, enumerated: int, type: str, position: int) -> bool | tuple[bool,str]:
+        ptypeMap = {
+            cls._:   [],
+            cls.r:   ["REG"],
+            cls.rr:  ["REG", "REG"],
+            cls.rrr: ["REG", "REG", "REG"],
+            cls.i:   ["INT"],
+            cls.ri:  ["REG", "INT"],
+            cls.rf:  ["REG", "FLOAT"]
+        }
+        params = ptypeMap.get(enumerated, [])
+        if len(params) <= position:
+            return False
+        if type == "ID": type = "INT"
+        return params[position] == type, params[position]
+        
+
+class Builder:
+    _readableModes: dict[str, str] = {
+        "b":            "{0:#064b}\n",
+        "bin":          "{0:#064b}\n",
+        "binary":       "{0:#064b}\n",
+        "o":            "{0:#022o}\n",
+        "oct":          "{0:#022o}\n",
+        "octal":        "{0:#022o}\n",
+        "hex":          "0x{0:016X}\n",
+        "hexadecimal":  "0x{0:016X}\n",
+        "d":            "{0:d}\n",
+        "dec":          "{0:d}\n",
+        "decimal":      "{0:d}\n"
+    }
+    
+    _jumps: set[str] = {
+        "JMP",
+        "JMPZ",
+        "JMPNZ",
+        "JMPN",
+        "JMPNN",
+        "JMPOVR",
+        "JMPUND",
+        "JMPNORZ",
+        "JMPNANDZ"
+    }
+    
+    def __init__(self, readable: bool | str = False):
+        if readable == True: self._readable = self._readableModes["b"]
+        else: self._readable = self._readableModes.get(readable, False)
+        self._writeMode = "w" if readable else "wb"
+        
+        self._sectionIsText: bool = True
+        self._expect: None | str = None
+        
+        self._textOutput: list[int] = []
+        self._textReplace: dict[str,list[tuple[int,int]]] = {}
+        self._textDirs: dict[int,list[tuple[int, int]]] = {}
+        
+        self._dataOutput: list[int] = []
+        self._dataReplace: dict[str,list[int]] = {}
+        
+        self._outputLabels: list[tuple[str, int] | int] = [0]
+        self._inst: str = None
+        self._instBase: int = None
+        self._expectedParams: ParamType = None
+        self._paramsLen: list[int] = None
+        self._params: list[int|float|str] = []
+        self._labels: dict[str, str] = {}
+        self._hasErrors = False
+    
+    def encodeInt(self, val: int) -> bytes | str:
+        if self._readable:
+            return self._readable.format(val)
+        return val.to_bytes(8)
+    
+    def encodeStr(self, val: str) -> bytes | str:
+        if self._readable:
+            return f'"{val}\\0"\n'
+        return val.encode("utf-8") + b"\0"
+    
+    def checkExpected(self, pos: str):
+        if not self._expect:
+            return
+        if self._expect == ",":
+            print(f"Error en {pos}: se espera el separador \",\" entre parametros")
+            self._hasErrors = True
+        elif self._expect == ":":
+            print(f"Error en {pos}: se espera el separador \":\" despues de definir una seccion")
+            self._hasErrors = True
+        self._expect = None
+    
+    def instruction(self, inst: str, pos: str) -> None:
+        if not self._sectionIsText:
+            print(f"Error en {pos}: no se puede colocar instrucciones en la secion data")
+            self._hasErrors = True
+            return
+        if self._inst != None:
+            print(f"Error en {pos}: no se puede iniciar una instruccion dentro de otra")
+            self._hasErrors = True
+            return
+        self._inst = inst
+        self._expectedParams, self._instBase, self._paramsLen = INSTRUCTION[inst.upper()]
+    
+    def section(self, section: str, pos):
+        if self._inst != None:
+            print(f"Error en {pos}: no se termino la instruccion")
+            self._hasErrors = True
+            return
+        
+        self._expect = ":"
+        
+        self._sectionIsText = section.upper() == "TEXT"
+    
+    def literal(self, literal: str, pos: str ):
+        if not self._expect or literal not in self._expect:
+            self._expect = None
+            print(f"Error en {pos}: literal \"{literal}\" inesperado")
+            self._hasErrors = True
+            return
+        self._expect = None
+    
+    def parameter(self, type: str, value: int | float | str, pos: str) -> None:
+        
+        #si esta en la seccion data guardar dato directamente
+        if not self._sectionIsText:
+            self._expect = ","
+            if type == "ID":
+                if value in self._dataReplace:
+                    self._dataReplace[value].append(len(self._dataOutput))
+                else:
+                    self._dataReplace[value] = [len(self._dataOutput)]
+                value = 0
+            elif type == "FLOAT": #convertir floante a representacion binaria
+                value = int.from_bytes(pack(">d", value))
+            self._dataOutput.append(value)
+            return
+        
+        if self._inst == None:
+            print(f"Error en {pos}: se esperaba una instruccion")
+            self._hasErrors = True
+            return
+        
+        self._expect = ","
+        
+        expectedLen = ParamType.len(self._expectedParams)
+        if len(self._params) + 1 > expectedLen:
+            print(f"Error en {pos}: {expectedLen} argumentos esperados para instruccion {self._inst}")
+            self._hasErrors = True
+            return
+        
+        isCorrectType, correctType = ParamType.correctParam(
+            self._expectedParams, type, len(self._params))
+        if not isCorrectType:
+            print(f"Error en {pos}: la instruccion \"{self._inst}\" esperaba un parametro tipo \"{correctType}\" no {type}")
+            self._hasErrors = True
+            return
+        self._params.append(value)
+    
+    def labelDef(self, label: str, pos: str) -> None:
+        if self._inst != None:
+            print(f"Advertencia en {pos}: definicion de etiqueta dentro de instruccion")
+        
+        self._expect = ","
+        
+        if label in self._labels:
+            print(f"Error en {pos}: etiqueta ya definida antes en {self._labels[label]}")
+            self._hasErrors = True
+            return
+        L = label.upper()
+        if L in INSTRUCTION or L in REGISTERS or L in ["TEXT", "DATA"]:
+            print(f"Error en {pos}: no se permiten etiquetas con el nombre de palabras reservadas")
+            self._hasErrors = True
+            return
+        
+        self._labels[label] = pos
+        oLen = len(self._textOutput if self._sectionIsText else self._dataOutput)
+        if self._sectionIsText:
+            self._outputLabels.insert(0, (label, oLen))
+        else:
+            self._outputLabels.append((label, oLen))
+    
+    def clearInstruction(self) -> None:
+        self._inst = None
+        self._instBase = None
+        self._expectedParams = None
+        self._paramsLen = None
+        self._params = []
+    
+    def instructionEnd(self, pos):
+        if self._expect == ",": self._expect = None
+        
+        if self._inst == None or not self._sectionIsText:
+            return
+        expectedLen = ParamType.len(self._expectedParams)
+        if len(self._params) != expectedLen:
+            print(f"Error en {pos}: {expectedLen} argumentos esperados para instruccion {self._inst}")
+            self._hasErrors = True
+            self.clearInstruction()
+            return
+        
+        word = 0
+        nParams = len(self._params)
+        accOcupied = sum(self._paramsLen[:nParams-1:-1])
+        for param, pLen in zip(self._params[::-1], self._paramsLen[nParams::-1]):
+            pos = ((len(self._textOutput) + 1) << 6) - accOcupied - pLen
+            if not isinstance(param, str):
+                if isinstance(param, float):
+                    #convertir float a representacion binaria
+                    significant = int.from_bytes(pack(">d", param))
+                    #truncar float para guardar bits mas significativos
+                    significant >>= 64 - pLen
+                    param = significant
+                
+                if self._inst in self._jumps:
+                    # si es una instruccion de salto y no es una id
+                    if param in self._textDirs:
+                        self._textDirs[param].append((pos, pLen))
+                    else:
+                        self._textDirs[param] = [(pos, pLen)]
+                else:
+                    word |= (param & self.len2mask(pLen)) << accOcupied
+            else: # si es un identificador
+                if param in self._textReplace:
+                    self._textReplace[param].append((pos, pLen))
+                else:
+                    self._textReplace[param] = [(pos, pLen)]
+            accOcupied += pLen
+        word |= self._instBase << accOcupied
+        word &= self.len2mask(64)
+        self._textOutput.append(word)
+        
+        self.clearInstruction()
+    
+    def len2mask(self, len: int):
+        return (1 << len) - 1
+    
+    def encodeLabels(self) -> bytes:
+        ret = "" if self._readable else b""
+        for val in self._outputLabels:
+            if val != 0:
+                lbl, pos = val
+                ret += self.encodeStr(lbl)
+                ret += self.encodeInt(pos)
+            else:
+                ret += self.encodeStr("")
+        ret += self.encodeStr("")
+        return ret
+    
+    def encodeSectionOutput(self, output: list[bytes]) -> bytes:
+        ret = "" if self._readable else b""
+        ret += self.encodeInt(len(output))
+        for inst in output:
+            ret += self.encodeInt(inst)
+        return ret
+    
+    def encodeText(self) -> bytes:
+        ret = "" if self._readable else b""
+        
+        #codificar identificadores a reemplazar en la seccion texto
+        for id, posInfo in self._textReplace.items():
+            ret += self.encodeStr(id)
+            ret += self.encodeInt(len(posInfo))
+            for start, posLen in posInfo:
+                ret += self.encodeInt(start)
+                ret += self.encodeInt(posLen)
+        ret += self.encodeStr("")
+        
+        #codificar direcciones en la seccion texto
+        ret += self.encodeInt(len(self._textDirs))
+        for dir, posInfo in self._textDirs.items():
+            ret += self.encodeInt(dir)
+            ret += self.encodeInt(len(posInfo))
+            for start, posLen in posInfo:
+                ret += self.encodeInt(start)
+                ret += self.encodeInt(posLen)
+        
+        #codificar instrucciones
+        ret += self.encodeSectionOutput(self._textOutput)
+        return ret
+        
+    def encodeData(self) -> bytes:
+        ret = "" if self._readable else b""
+        for id, posInfo in self._dataReplace.items():
+            ret += self.encodeStr(id)
+            ret += self.encodeInt(len(posInfo))
+            for pos in posInfo:
+                ret += self.encodeInt(pos)
+        ret += self.encodeStr("")
+        ret += self.encodeSectionOutput(self._dataOutput)
+        return ret
+    
+    def write(self, file: str):
+        with open(file, self._writeMode) as out:
+            out.write(self.encodeLabels())
+            out.write(self.encodeText())
+            out.write(self.encodeData())
+            
 
 REGISTERS = {
-    "PC": 0x1,
-    "SP": 0x2,
-    "BP": 0x3,
-    "IR": 0x4,
-    "RA": 0x5,
-    "RB": 0x6,
-    "RC": 0x7,
-    "RD": 0x8,
-    "RE": 0x9,
-    "R1": 0xA,
-    "R2": 0xB,
-    "R3": 0xC,
-    "R4": 0xD,
-    "R5": 0xE,
+    'PC': 0x1, 'SP': 0x2, 'BP': 0x3, 'IR': 0x4, 'RA': 0x5,
+    'RB': 0x6, 'RC': 0x7, 'RD': 0x8, 'RE': 0x9,
+    'R1': 0xA, 'R2': 0xB, 'R3': 0xC, 'R4': 0xD, 'R5': 0xE,
 }
 
-INSTRUCTION = {
-    "NOP": ["nop", 0x0000000000000000],
-    "HLT": ["nop", 0xFFFFFFFFFFFFFFFF],
-    "JMP": ["jmp", 0x01],
-    "JMPZ": ["jmp", 0x02],
-    "JMPNZ": ["jmp", 0x03],
-    "JMPN": ["jmp", 0x04],
-    "JMPNN": ["jmp", 0x05],
-    "JMPOVR": ["jmp", 0x06],
-    "JMPUND": ["jmp", 0x07],
-    "JMPNORZ": ["jmp", 0x08],
-    "JMPNANDZ": ["jmp", 0x09],
-    "LOADMEM": ["r_m", 0xA],
-    "LDINT": ["r_m", 0x9],
-    "LDFLT": ["r_m", 0xB],
-    "MOV": ["r_r", 0xC0000000000000],
-    "COMP": ["r_r", 0x00000000000021],
-    "NOT": ["r_r", 0x00000000F00034],
-    "SHFTL": ["r_r", 0x00000000F00035],
-    "SHFTR": ["r_r", 0x00000000F00036],
-    "ABVAL": ["r_r", 0x00000000000041],
-    "CHNSGN": ["r_r", 0x00000000000042],
-    "N2INT": ["r_r", 0x00000000000043],
-    "N2FLT": ["r_r", 0x00000000000044],
-    "ADD": ["rrr", 0x0000000000001],
-    "SUB": ["rrr", 0x0000000000002],
-    "MUL": ["rrr", 0x0000000000003],
-    "DIV": ["rrr", 0x0000000000004],
-    "FADD": ["rrr", 0x0000000000011],
-    "FSUB": ["rrr", 0x0000000000012],
-    "FMUL": ["rrr", 0x0000000000013],
-    "FDIV": ["rrr", 0x0000000000014],
-    "AND": ["rrr", 0x0000000000031],
-    "OR": ["rrr", 0x0000000000032],
-    "XOR": ["rrr", 0x0000000000033],
-    "PUSH": ["reg", 0x000000000000009],
-    "POP": ["reg", 0x00000000000000A],
-    "DEC": ["reg", 0x000000000000011],
-    "INC": ["reg", 0x000000000000012],
-    "STOR": ["m_r", 0x08],
-    "STRINT": ["m_m", 0xA],
-    "STRFLT": ["m_m", 0xE],
+current_file = ""
+lastNewLinePos = 0
+
+#instruction mappea un lexema de instruccion a:
+# (tipo_parametros, codigo_base, [largo_parametros])
+#ej add (ParamType.rrr, 0x0000000000001, [4, 4, 4])
+
+INSTRUCTION: dict[str, tuple[ParamType, int, list[int]]] = {
+    "NOP":      (ParamType._,   0x0000000000000000, []),
+    "HLT":      (ParamType._,   0xFFFFFFFFFFFFFFFF, []),
+    "JMP":      (ParamType.i,   0x01,               [56]),
+    "JMPZ":     (ParamType.i,   0x02,               [56]),
+    "JMPNZ":    (ParamType.i,   0x03,               [56]),
+    "JMPN":     (ParamType.i,   0x04,               [56]),
+    "JMPNN":    (ParamType.i,   0x05,               [56]),
+    "JMPOVR":   (ParamType.i,   0x06,               [56]),
+    "JMPUND":   (ParamType.i,   0x07,               [56]),
+    "JMPNORZ":  (ParamType.i,   0x08,               [56]),
+    "JMPNANDZ": (ParamType.i,   0x09,               [56]),
+    "JMPR":     (ParamType.i,   0x11,               [56]),
+    "LOADMEM":  (ParamType.rr,  0x0A,               [4, 4, 52]),
+    "LDINT":    (ParamType.ri,  0x9,                [4, 56]),
+    "LDFLT":    (ParamType.rf,  0xB,                [4, 56]),
+    "MOV":      (ParamType.rr,  0xC0000000000000,   [4, 4]),
+    "COMP":     (ParamType.rr,  0x00000000000021,   [4, 4]),
+    "NOT":      (ParamType.rr,  0x00000000F00340,   [4, 4]),
+    "SHFTL":    (ParamType.rr,  0x00000000F00350,   [4, 4]),
+    "SHFTR":    (ParamType.rr,  0x00000000F00360,   [4, 4]),
+    "ABVAL":    (ParamType.rr,  0x00000000000041,   [4, 4]),
+    "CHNSGN":   (ParamType.rr,  0x00000000000042,   [4, 4]),
+    "CHNINT":    (ParamType.rr,  0x00000000000043,   [4, 4]),
+    "CHNFLT":    (ParamType.rr,  0x00000000000044,   [4, 4]),
+    "ADD":      (ParamType.rrr, 0x0000000000001,    [4, 4, 4]),
+    "SUB":      (ParamType.rrr, 0x0000000000002,    [4, 4, 4]),
+    "MUL":      (ParamType.rrr, 0x0000000000003,    [4, 4, 4]),
+    "DIV":      (ParamType.rrr, 0x0000000000004,    [4, 4, 4]),
+    "FADD":     (ParamType.rrr, 0x0000000000011,    [4, 4, 4]),
+    "FSUB":     (ParamType.rrr, 0x0000000000012,    [4, 4, 4]),
+    "FMUL":     (ParamType.rrr, 0x0000000000013,    [4, 4, 4]),
+    "FDIV":     (ParamType.rrr, 0x0000000000014,    [4, 4, 4]),
+    "AND":      (ParamType.rrr, 0x0000000000031,    [4, 4, 4]),
+    "OR":       (ParamType.rrr, 0x0000000000032,    [4, 4, 4]),
+    "XOR":      (ParamType.rrr, 0x0000000000033,    [4, 4, 4]),
+    "PUSH":     (ParamType.r,   0x000000000000009,  [4]),
+    "POP":      (ParamType.r,   0x00000000000000A,  [4]),
+    "DEC":      (ParamType.r,   0x000000000000011,  [4]),
+    "INC":      (ParamType.r,   0x000000000000012,  [4]),
+
+    "STOR":     (ParamType.rr,  0x8,                [4, 4, 52]),
+    "STRINT":   (ParamType.ri,  0xA,                [4, 56]),
+    "STRFLT":   (ParamType.rf,  0xE,                [4, 56]),
 }
 
+tokens = [
+    "FLOAT",
+    "INT",
+    "INSTEND",
+    "REG",
+    "INST",
+    "ID",
+    "LBL_DEF",
+    "SECTION"
+]
 
-def parse_num(tok):
-    t = tok.strip()
-    if t.startswith("0x") or t.startswith("0X"):
-        return int(t, 16)
-    return int(t)
+states = (
+    ("label", "exclusive"),
+)
 
+literals = [",", ":"]
 
-def parse_reg(tok):
-    t = tok.strip().upper()
-    if t not in REGISTERS:
-        raise ValueError(f"Registro desconocido: {tok}")
-    return REGISTERS[t]
-
-
-def collect_labels(lines):
-    labels = {}
-    addr = 0
-    for line in lines:
-        s = line.split("#", 1)[0].strip()
-        if not s:
-            continue
-        if s.endswith(":"):
-            labels[s[:-1]] = addr
-            continue
-        addr += 1
-    return labels
+t_ignore = " \t"
 
 
-def encode_line(mnemonic, operands, labels):
-    mnemonic = mnemonic.upper()
-    if mnemonic not in INSTRUCTION:
-        raise ValueError(f"Instrucción desconocida: {mnemonic}")
-    mode, base = INSTRUCTION[mnemonic]
+def t_FLOAT(t):
+    r"(?:-[ \t]*)?\d+\.\d+([Ee][+-]?\d+)?"
+    t.value = float(t.value)
+    return t
 
-    # NOP/HLT
-    if mnemonic in ("NOP", "HLT"):
-        return base
+def t_INT(t):
+    r"(?:-[ \t]*)?(?i:0(X[\dA-F]+|O[0-7]+|B[01]+)|\d+)"
+    prefix = {
+        "0x": 16,
+        "0o": 8,
+        "0b": 2
+    }
+    num, base = t.value, 10
+    if len(t.value) > 1 and t.value[:2] in prefix:
+        num, base = t.value[2:], prefix[t.value]
+    t.value = int(num, base)
+    return t
 
-    if mode == "jmp":
-        word = base << 56
-        addr = 0
+def t_error(t):
+    print(f"Símbolo inesperado '{repr(t.value[0])}' en {current_file}:{t.lexer.lineno}:{t.lexer.lexpos-lastNewLinePos}")
+    t.lexer.skip(1)
 
-        if operands:
-            tok = operands[0]
-            addr = labels.get(tok, None) if tok in labels else parse_num(tok)
-        word |= addr & ((1 << 64) - 1)
-        return word
+t_label_ignore = " \t"
 
-    if mode == "r_m":
-        word = base << 60
-        reg = parse_reg(operands[0]) if operands else 0
-        mem = 0
+def t_begin_label(t):
+    r"{"
+    t.lexer.begin("label")
+    
+def t_label_end(t):
+    r"}"
+    t.lexer.begin("INITIAL")
 
-        if len(operands) > 1:
-            tok = operands[1]
-            mem = labels.get(tok, None) if tok in labels else parse_num(tok)
+def t_label_error(t):
+    print(f"Símbolo inesperado '{repr(t.value[0])}' en {current_file}:{t.lexer.lineno}:{t.lexer.lexpos-lastNewLinePos}")
+    t.lexer.skip(1)
 
-        word |= (reg & 0xF) << 56
-        word |= mem & ((1 << 56) - 1)
-        return word
+def t_label_nwln(t):
+    r"\n+"
+    global lastNewLinePos
+    t.lexer.lineno += len(t.value)
+    lastNewLinePos = t.lexer.lexpos - 1
 
-    if mode == "m_r":
-        word = base << 56
-        mem = parse_num(operands[0]) if operands else 0
-        reg = parse_reg(operands[1]) if len(operands) > 1 else 0
+def t_label_eof(t):
+    print(f"Error en {current_file}:{t.lexer.lineno}:{t.lexer.lexpos-lastNewLinePos}: final de archivo alcanzado antes de cerrar etiqueta")
+    return None
 
-        word |= (mem & ((1 << 56) - 1)) << 4
-        word |= reg & 0xF
-        return word
+t_label_LBL_DEF = r"\w[\d\w]+"
 
-    if mode == "r_r":
-        word = base << 8
-        r1 = parse_reg(operands[0]) if len(operands) > 0 else 0
-        r2 = parse_reg(operands[1]) if len(operands) > 1 else 0
-        word |= (r1 & 0xF) << 4
-        word |= r2 & 0xF
-        return word
 
-    if mode == "rrr":
-        word = base << 12
-        r1 = parse_reg(operands[0])
-        r2 = parse_reg(operands[1])
-        r3 = parse_reg(operands[2])
-        word |= (r1 & 0xF) << 8
-        word |= (r2 & 0xF) << 4
-        word |= r3 & 0xF
-        return word
-
-    if mode == "reg":
-        word = base << 4
-        r = parse_reg(operands[0])
-        word |= r & 0xF
-        return word
-
-    if mode == "m_m":
-        word = base << 60
-        mem = parse_num(operands[0])
-        val = parse_num(operands[1])
-        word |= (mem & 0x0FFFFFFF) << 32
-        word |= val & 0x0FFFFFFF
-        return word
-
-    raise ValueError(f"Formato no soportado para {mnemonic}")
-
+def t_ID(t):
+    r"\w[\w\d]*"
+    val = REGISTERS.get(t.value.upper(), None)
+    if val != None:
+        t.value = val
+        t.type = "REG"
+    elif t.value.upper() in INSTRUCTION:
+        t.value = t.value.upper()
+        t.type = "INST"
+    elif t.value.upper() in ["TEXT", "DATA"]:
+        t.value = t.value.upper()
+        t.type = "SECTION"
+    return t
+        
+def t_INSTEND(t):
+    r";|;?(?:\s*\n|\s*\#.*(?:\n|$)|\s+$)+"
+    global lastNewLinePos
+    newLines = t.value.count("\n")
+    t.lexer.lineno += newLines
+    if newLines > 0: lastNewLinePos = t.lexer.lexpos - 1
+    t.value = ";"
+    return t
 
 def main():
     if len(sys.argv) < 3:
-        print("Uso: python assembly.py <archivo_asm> <archivo_salida.bin>")
+        print("Uso: python assembly.py <archivo_asm> <archivo_salida.o>")
         sys.exit(1)
     asm_file = sys.argv[1]
     out_file = sys.argv[2]
+    
+    readable = None
+    try:
+        index = sys.argv.index("--readable")
+        if index < len(sys.argv):
+            readable = sys.argv[index + 1]
+        else: readable = True
+    except ValueError:
+        readable = False
 
-    with open(asm_file, "r") as f:
-        lines = f.readlines()
-
-    labels = collect_labels(lines)
-    words = []
-    for idx, line in enumerate(lines, 1):
-        s = line.split("#", 1)[0].strip()
-        if not s:
-            continue
-        if s.endswith(":"):
-            continue
-        parts = s.replace(",", " ").split()
-        mnemonic = parts[0]
-        ops = parts[1:]
-        w = encode_line(mnemonic, ops, labels)
-        words.append(w)
-
-    with open(out_file, "w") as fout:
-        fout.write("# Assembled from {}\n".format(asm_file))
-        for w in words:
-            fout.write(f"{w:064b}\n")
-    print("Ensamblado generado: {} palabras".format(len(words)))
-
+    global current_file
+    current_file = asm_file
+    try:
+        with open(asm_file, 'r') as f:
+            lines = f.read()
+    except FileNotFoundError:
+        print(f"No se pudo encontrar el archivo {asm_file}")
+    
+    lexer = lex.lex()
+    lexer.input(lines)
+    builder = Builder(readable)
+    last_pos = f"{asm_file}:{1}:{1}"
+    while tok := lexer.token():
+        # if tok.type in ["INST", ","]: tok.value
+        # elif tok.type == "LBL_DEF":
+        #     saveLabel(tok.value)
+        # print(f"Procesando <{tok.type}> : \"{tok.value}\"")
+        pos = f"{asm_file}:{lexer.lineno}:{lexer.lexpos - lastNewLinePos}"
+        if tok.type == "INST":
+            builder.checkExpected(last_pos)
+            builder.instruction(tok.value, pos)
+        elif tok.type in ["REG", "INT", "FLOAT", "ID"]:
+            builder.checkExpected(last_pos)
+            builder.parameter(tok.type, tok.value, pos)
+        elif tok.value == ";":
+            builder.instructionEnd(last_pos)
+            builder.checkExpected(last_pos)
+        elif tok.value in literals:
+            builder.literal(tok.value, last_pos)
+        elif tok.type == "SECTION":
+            builder.checkExpected(last_pos)
+            builder.section(tok.value, pos)
+        elif tok.type == "LBL_DEF":
+            builder.checkExpected(last_pos)
+            builder.labelDef(tok.value, pos)
+        last_pos = pos
+    
+    builder.write(out_file)
+        
 
 if __name__ == "__main__":
     main()
-
-
-class Assembler:
-    """A lightweight assembly engine that exposes a programmatic API.
-
-    It can assemble a block of text containing assembly instructions into
-    64-bit words (integers). This is designed for integration with a GUI
-    so you can feed the assembly text directly and get binary words back.
-    """
-
-    def __init__(self):
-        # Expose internal structures for external inspection if needed
-        self.registers = REGISTERS
-        self.instructions = INSTRUCTION
-
-    def _collect_labels(self, lines):
-        return collect_labels(lines)
-
-    def assemble_text(self, text: str):
-        # Accept raw assembly text and return a list of 64-bit integers
-        lines = text.splitlines()
-        labels = self._collect_labels(lines)
-        words = []
-        for idx, line in enumerate(lines, 1):
-            s = line.split("#", 1)[0].strip()
-            if not s:
-                continue
-            if s.endswith(":"):
-                continue
-            parts = s.replace(",", " ").split()
-            mnemonic = parts[0]
-            ops = parts[1:]
-            w = encode_line(mnemonic, ops, labels)
-            words.append(w)
-        return words
-
-    def assemble_text_as_binary(self, text: str):
-        words = self.assemble_text(text)
-        return [f"{w:064b}" for w in words]
