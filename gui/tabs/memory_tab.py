@@ -22,7 +22,6 @@ def build_memory_tab(parent, pc_bridge=None):
     # ====================================#
     def on_run():
         if pc_bridge._loaded:
-            print(pc_bridge.reg.PC)
             pc_bridge.cpu.run()
 
     # ====================================#
@@ -65,7 +64,6 @@ def build_memory_tab(parent, pc_bridge=None):
     run_btn = ctk.CTkButton(top_bar, text="run", command=on_run)
     run_btn.grid(row=0, column=1, sticky="e")
 
-    # RAM: container with horizontal scrollbar for binary-like 64-bit words
     ram_frame = ctk.CTkFrame(right_col)
     ram_frame.pack(fill="both", expand=True, padx=6, pady=6)
     _ram_box = ctk.CTkTextbox(ram_frame, width=580, height=260)
