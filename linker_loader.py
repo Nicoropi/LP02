@@ -141,7 +141,7 @@ class LinkerLoader:
                 break
 
             if tokens[i].type not in ("NUMBER", "BINARY"):
-                break  # 👈 en vez de explotar
+                break
 
             self.text.append(tokens[i].value)
             i += 1
@@ -180,16 +180,12 @@ class LinkerLoader:
         
         # DATA SECTION
         n_data = 0
-
         i = self._skip_empty_strings(tokens, i)
-
-        # 👇 CLAVE: solo hay data si realmente quedan números DESPUÉS
         if i < len(tokens) and tokens[i].type in ("NUMBER", "BINARY"):
 
             n_data = tokens[i].value
             i += 1
 
-            # ⚠️ protección extra
             if n_data > (len(tokens) - i):
                 raise Exception("DATA inconsistente: tamaño mayor que tokens disponibles")
 
