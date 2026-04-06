@@ -12,7 +12,7 @@ except Exception:
 
 # Optional: import the Assembler class for GUI usage
 try:
-    import assembly as _assembly_module  # type: ignore
+    import spl.assembly as _assembly_module  # type: ignore
 
     _ASSEMBLER_CLASS = getattr(_assembly_module, "Assembler", None)
 except Exception:
