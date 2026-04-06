@@ -2,7 +2,8 @@ import sys
 
 from pc.ram      import RAM
 from pc.register import Registers
-from pc.alu_2    import Alu
+from pc.alu      import Alu
+from pc.fpu      import FPU
 from pc.cpu      import CPU
 from pc.loader   import Loader
 
@@ -23,7 +24,8 @@ def main():
     #Instanciar los modulos de hardware
     ram  = RAM(word_size="64", positions=MAX_RAM)
     reg  = Registers()
-    alu  = Alu(reg)
+    fpu = FPU(reg)
+    alu  = Alu(reg, fpu)
     cpu  = CPU(ram, reg, alu)
 
     #Cargar programa con el Loader (ANTES del ciclo run)
