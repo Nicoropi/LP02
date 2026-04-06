@@ -494,6 +494,7 @@ def main():
             lines = f.read()
     except FileNotFoundError:
         print(f"No se pudo encontrar el archivo {asm_file}")
+        return
     
     lexer = lex.lex()
     lexer.input(lines)
@@ -523,7 +524,7 @@ def main():
             builder.checkExpected(last_pos)
             builder.labelDef(tok.value, pos)
         last_pos = pos
-    
+    if builder._inst: builder.instructionEnd(last_pos)
     builder.write(out_file)
         
 
