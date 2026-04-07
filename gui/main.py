@@ -6,7 +6,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import customtkinter as ctk
 
-from .tabs.code_tab import build_code_tab
+from .tabs.asm_tab import build_asm_tab
 from .tabs.memory_tab import build_memory_tab, update_memory_tab
 from .pc_bridge import PCBridge
 
@@ -25,7 +25,6 @@ PALETTE = {
     "color11": "#808080",
 }
 
-
 class VIC_GUI(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,9 +41,9 @@ class VIC_GUI(ctk.CTk):
         self.notebook = ttk.Notebook(self, style="CustomNotebook.TNotebook")
         self.notebook.pack(fill="both", expand=True)
 
-        self.code_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.code_tab, text=" Code ")
-        build_code_tab(self.code_tab, pc_bridge=self.pc_bridge)
+        self.asm_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.asm_tab, text="Assembly")
+        build_asm_tab(self.asm_tab, pc_bridge=self.pc_bridge)
 
         self.ram_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.ram_tab, text="    PC    ")

@@ -77,7 +77,7 @@ def load_program(pc_bridge):
             pass
 
 
-def build_code_tab(parent, pc_bridge=None):
+def build_asm_tab(parent, pc_bridge=None):
     frame = parent
 
     # ====================================#

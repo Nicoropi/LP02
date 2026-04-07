@@ -18,8 +18,8 @@ class PCBridge:
         # Hardware modules
         self.ram = RAM(word_size="64", positions=MAX_RAM)
         self.reg = Registers()
-        self.alu = Alu(self.reg)
         self.fpu = FPU(self.reg)
+        self.alu = Alu(self.reg, self.fpu)
         self.cpu = CPU(self.ram, self.reg, self.alu)
 
         self._base_addr = base_addr
