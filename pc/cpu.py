@@ -197,7 +197,7 @@ class CPU:
             self.write_memory(self.get_reg(reg_x), imm56)
             return
 
-        # LOAD FLOAT X, VALUE — X <- VALUE (punto fijo 32.32)
+        # LOAD FLOAT X, VALUE
         # Binario: 1011 xxxx vvvv...vvvv
         if opcode4 == 0xB:
             reg_x = (instr >> 56) & 0xF
@@ -255,11 +255,7 @@ class CPU:
             # CHNG INT X, Y — X <- int(Y) (float -> entero)
             reg_x = (instr >> 4) & 0xF
             val = self.get_reg(instr & 0xF)
-            int_part = (val >> 32) & 0xFFFFFFFF
-            if int_part & (1 << 31):
-                int_part |= 0xFFFFFFFF00000000
-            result = int_part & WORD_MASK
-            self.alu.update_flags(result)
+            result = self.alu.float_to_int(val)
             self.set_reg(reg_x, result)
             return
 
@@ -267,8 +263,7 @@ class CPU:
             # CHNG FLOAT X, Y — X <- float(Y) (entero -> float)
             reg_x = (instr >> 4) & 0xF
             val = self.get_reg(instr & 0xF)
-            result = (val << 32) & WORD_MASK
-            self.alu.update_flags(result)
+            result = self.alu.int_to_float(val)
             self.set_reg(reg_x, result)
             return
 

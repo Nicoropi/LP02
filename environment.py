@@ -2,7 +2,8 @@ import sys
 
 from pc.ram      import RAM
 from pc.register import Registers
-from pc.alu_2    import Alu
+from pc.alu      import Alu
+from pc.fpu      import FPU
 from pc.cpu      import CPU
 from pc.loader   import Loader
 from pc.linker   import SimpleBinLinker, write_bin

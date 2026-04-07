@@ -4,115 +4,175 @@ SIGN_MASK = 1 << 63
 EXP_MASK  = ((1 << 11) - 1) << 52
 MANT_MASK = (1 << 52) - 1
 
-BIAS = 1023 # 2^(k−1)−1 where k = 11
+BIAS = 1023
 
 
-#   Basic methods
+class FPU:
 
-def fextract(num):
-    sign = (num >> 63) & 0x1
-    exp  = (num >> 52) & 0x7FF
-    mant = num & MANT_MASK
+    def __init__(self, registers):
+        self.reg = registers
 
-    if exp != 0:
-        mant |= (1 << 52)
+    # ------------------------
+    # BASIC METHODS
+    # ------------------------
 
-    return sign, exp, mant
+    def fextract(self, num):
+        sign = (num >> 63) & 0x1
+        exp  = (num >> 52) & 0x7FF
+        mant = num & MANT_MASK
 
-def fpack(sign, exp, mant):
-    mant &= MANT_MASK
-    result = ((sign & 0x1) << 63) | ((exp & 0x7FF) << 52) | mant
+        if exp != 0:
+            mant |= (1 << 52)
 
-    return result & WORD_MASK
+        return sign, exp, mant
 
-def falign(expA, mantA, expB, mantB):
-    if expA > expB:
-        shift = expA - expB
-        mantB >>= shift
-        expB = expA
-    elif expB > expA:
-        shift = expB - expA
-        mantA >>= shift
-        expA = expB
+    def fpack(self, sign, exp, mant):
+        mant &= MANT_MASK
+        return ((sign & 1) << 63) | ((exp & 0x7FF) << 52) | mant
 
-    return expA, mantA, mantB
+    def falign(self, expA, mantA, expB, mantB):
+        if expA > expB:
+            mantB >>= (expA - expB)
+            return expA, mantA, mantB
+        elif expB > expA:
+            mantA >>= (expB - expA)
+            return expB, mantA, mantB
+        return expA, mantA, mantB
 
-def fnormalize(exp, mant):
-    if mant >= (1 << 53):
-        mant >>= 1
-        exp += 1
+    def fnormalize(self, exp, mant):
+        if mant == 0:
+            return 0, 0
 
-    while mant > 0 and mant < (1 << 52):
-        mant <<= 1
-        exp -= 1
+        while mant >= (1 << 53):
+            mant >>= 1
+            exp += 1
 
-    return exp, mant
+        while mant < (1 << 52):
+            mant <<= 1
+            exp -= 1
 
-# Basic operations
+        return exp, mant
 
-def fadd(a, b):
-    signA, expA, mantA = fextract(a)
-    signB, expB, mantB = fextract(b)
+    # ------------------------
+    # FLAGS
+    # ------------------------
 
-    exp, mantA, mantB = falign(expA, mantA, expB, mantB)
+    def update_flags(self, result):
+        sign, exp, mant = self.fextract(result)
 
-    if signA == signB:
-        mant = mantA + mantB
-        sign = signA
-    else:
-        if mantA >= mantB:
-            mant = mantA - mantB
+        self.reg.flags["Z"] = int(result == 0)
+        self.reg.flags["N"] = sign
+
+        # overflow
+        self.reg.flags["D"] = int(exp >= 2047)
+
+        # underflow
+        self.reg.flags["U"] = int(exp == 0 and mant != 0)
+
+    # ------------------------
+    # FLOAT OPERATIONS
+    # ------------------------
+
+    def fadd(self, a, b):
+        signA, expA, mantA = self.fextract(a)
+        signB, expB, mantB = self.fextract(b)
+
+        exp, mantA, mantB = self.falign(expA, mantA, expB, mantB)
+
+        if signA == signB:
+            mant = mantA + mantB
             sign = signA
         else:
-            mant = mantB - mantA
-            sign = signB
+            if mantA >= mantB:
+                mant = mantA - mantB
+                sign = signA
+            else:
+                mant = mantB - mantA
+                sign = signB
 
-    exp, mant = fnormalize(exp, mant)
-    return fpack(sign, exp, mant)
+        exp, mant = self.fnormalize(exp, mant)
 
-def fsub(a, b):
-    b ^= (1 << 63)
-    return fadd(a, b)
+        result = self.fpack(sign, exp, mant)
+        self.update_flags(result)
+        return result
 
-def fmul(a, b):
-    signA, expA, mantA = fextract(a)
-    signB, expB, mantB = fextract(b)
+    def fsub(self, a, b):
+        b ^= (1 << 63)
+        return self.add(a, b)
 
-    sign = signA ^ signB # signA XOR signB
-    exp = expA + expB - BIAS
+    def fmul(self, a, b):
+        signA, expA, mantA = self.fextract(a)
+        signB, expB, mantB = self.fextract(b)
 
-    mant = (mantA * mantB) >> 52
-    exp, mant = fnormalize(exp, mant)
-    return fpack(sign, exp, mant)
+        sign = signA ^ signB
+        exp = expA + expB - BIAS
 
-def fdiv(a, b):
-    signA, expA, mantA = fextract(a)
-    signB, expB, mantB = fextract(b)
+        mant = (mantA * mantB) >> 52
+        exp, mant = self.fnormalize(exp, mant)
 
-    if mantB == 0:
-        raise Exception("Divide by zero")
+        if exp >= 2047:
+            result = self.fpack(sign, 2047, 0)
+        else:
+            result = self.fpack(sign, exp, mant)
 
-    sign = signA ^ signB # signA XOR signB
-    exp = expA - expB + BIAS
+        self.update_flags(result)
+        return result
 
-    mant = (mantA << 52) // mantB
-    exp, mant = fnormalize(exp, mant)
-    return fpack(sign, exp, mant)
+    def fdiv(self, a, b):
+        signA, expA, mantA = self.fextract(a)
+        signB, expB, mantB = self.fextract(b)
 
-# Convertion
+        if mantB == 0:
+            raise Exception("Divide by zero")
 
-def int_to_float(n):
-    if n == 0:
-        return 0
+        sign = signA ^ signB
+        exp = expA - expB + BIAS
 
-    sign = 0
-    if n < 0:
-        sign = 1
-        n = -n
+        mant = (mantA << 52) // mantB
+        exp, mant = self.fnormalize(exp, mant)
 
-    # Position of the Most Significant Bit
-    msb = n.bit_length() - 1
-    exp = msb + BIAS
-    mant = n << (52 - msb)
+        result = self.fpack(sign, exp, mant)
+        self.update_flags(result)
+        return result
 
-    return fpack(sign, exp, mant)
+    # ------------------------
+    # CONVERSIONS
+    # ------------------------
+
+    def int_to_float(self, n):
+        if n == 0:
+            return 0
+
+        sign = 0
+        if n < 0:
+            sign = 1
+            n = -n
+
+        msb = n.bit_length() - 1
+        exp = msb + BIAS
+
+        mant = n << (52 - msb)
+        mant &= MANT_MASK
+
+        result = self.fpack(sign, exp, mant)
+        self.update_flags(result)
+        return result
+
+    def float_to_int(self, x):
+        sign, exp, mant = self.fextract(x)
+
+        if exp == 0:
+            return 0
+
+        shift = exp - BIAS - 52
+        if shift >= 0:
+            val = mant << shift
+        else:
+            val = mant >> (-shift)
+
+        if sign:
+            val = -val
+
+        result = val & WORD_MASK
+        self.update_flags(result)
+        return result
