@@ -1,4 +1,5 @@
 import ply.lex as lex
+import sys
 
 defines = {}
 buffer = ""
@@ -17,7 +18,7 @@ tokens = (
 #               Reglas               #
 #====================================#
 def t_INCLUIR(t):
-    r'%[ ]*incluir[ ]+[^\n]+'
+    r'%[ ]*include[ ]+[^\n]+'
     global buffer
 
     parts = t.value.split()
@@ -30,7 +31,7 @@ def t_INCLUIR(t):
         print(f"Error: no se pudo abrir {filename}")
 
 def t_DEFINIR(t):
-    r'%[ ]*definir[ ]+[a-zA-Z_][a-zA-Z0-9_]*[ ]+[^\n]+'
+    r'%[ ]*define[ ]+[a-zA-Z_][a-zA-Z0-9_]*[ ]+[^\n]+'
     parts = t.value.split()
 
     name = parts[-2]
@@ -87,8 +88,18 @@ def preprocess(data):
 # MAIN
 # =========================
 if __name__ == "__main__":
-    with open("input.asm", "r") as f:
-        data = f.read()
+    if len(sys.argv) < 2:
+        print("Uso: python preprocessor.py <archivo>")
+        sys.exit(1)
+
+    filename = sys.argv[1]
+
+    try:
+        with open(filename, "r") as f:
+            data = f.read()
+    except:
+        print(f"Error: no se pudo abrir {filename}")
+        sys.exit(1)
 
     output = preprocess(data)
     print(output)

@@ -9,7 +9,8 @@ class PCBridge:
         # Lazy import to avoid heavy import during GUI startup if not used
         from pc.ram import RAM
         from pc.register import Registers
-        from pc.alu_2 import Alu
+        from pc.alu import Alu
+        from pc.fpu import FPU
         from pc.cpu import CPU
         from pc.loader import Loader
 
@@ -18,6 +19,7 @@ class PCBridge:
         self.ram = RAM(word_size="64", positions=MAX_RAM)
         self.reg = Registers()
         self.alu = Alu(self.reg)
+        self.fpu = FPU(self.reg)
         self.cpu = CPU(self.ram, self.reg, self.alu)
 
         self._base_addr = base_addr

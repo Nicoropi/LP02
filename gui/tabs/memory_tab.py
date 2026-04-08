@@ -23,6 +23,7 @@ def build_memory_tab(parent, pc_bridge=None):
     def on_run():
         if pc_bridge._loaded:
             pc_bridge.cpu.run()
+            pc_bridge._loaded = False   
 
     # ====================================#
     #         Registers and Flags         #
