@@ -43,12 +43,12 @@ class ParamType(Enum):
 
 class Builder:
     _readableModes: dict[str, str] = {
-        "b":            "{0:#064b}\n",
-        "bin":          "{0:#064b}\n",
-        "binary":       "{0:#064b}\n",
-        "o":            "{0:#022o}\n",
-        "oct":          "{0:#022o}\n",
-        "octal":        "{0:#022o}\n",
+        "b":            "0b{0:064b}\n",
+        "bin":          "0b{0:064b}\n",
+        "binary":       "0b{0:064b}\n",
+        "o":            "0o{0:022o}\n",
+        "oct":          "0o{0:022o}\n",
+        "octal":        "0o{0:022o}\n",
         "hex":          "0x{0:016X}\n",
         "hexadecimal":  "0x{0:016X}\n",
         "d":            "{0:d}\n",
@@ -225,7 +225,7 @@ class Builder:
         word = 0
         nParams = len(self._params)
         accOcupied = sum(self._paramsLen[:nParams-1:-1])
-        for param, pLen in zip(self._params[::-1], self._paramsLen[nParams::-1]):
+        for param, pLen in zip(self._params[::-1], self._paramsLen[nParams-1::-1]):
             pos = ((len(self._textOutput) + 1) << 6) - accOcupied - pLen
             if not isinstance(param, str):
                 if isinstance(param, float):
@@ -334,48 +334,48 @@ lastNewLinePos = 0
 #ej add (ParamType.rrr, 0x0000000000001, [4, 4, 4])
 
 INSTRUCTION: dict[str, tuple[ParamType, int, list[int]]] = {
-    "NOP":      (ParamType._,    0x0000000000000000, []),
-    "HLT":      (ParamType._,    0xFFFFFFFFFFFFFFFF, []),
-    "JMP":      (ParamType.i,    0x01,               [56]),
-    "JMPZ":     (ParamType.i,    0x02,               [56]),
-    "JMPNZ":    (ParamType.i,    0x03,               [56]),
-    "JMPN":     (ParamType.i,    0x04,               [56]),
-    "JMPNN":    (ParamType.i,    0x05,               [56]),
-    "JMPOVR":   (ParamType.i,    0x06,               [56]),
-    "JMPUND":   (ParamType.i,    0x07,               [56]),
-    "JMPNORZ":  (ParamType.i,    0x08,               [56]),
-    "JMPNANDZ": (ParamType.i,    0x09,               [56]),
-    "JMPR":     (ParamType.i,    0x11,               [56]),
-    "LOADMEM":  (ParamType.rr,   0x0A,               [4, 4, 52]),
-    "LDINT":    (ParamType.ri,   0x9,                [4, 56]),
-    "LDFLT":    (ParamType.rf,   0xB,                [4, 56]),
-    "MOV":      (ParamType.rr,   0xC0000000000000,   [4, 4]),
-    "COMP":     (ParamType.rr,   0x00000000000021,   [4, 4]),
-    "NOT":      (ParamType.rr,   0x00000000F00340,   [4, 4]),
-    "SHFTL":    (ParamType.rr,   0x00000000F00350,   [4, 4]),
-    "SHFTR":    (ParamType.rr,   0x00000000F00360,   [4, 4]),
-    "ABVAL":    (ParamType.rr,   0x00000000000041,   [4, 4]),
-    "CHNSGN":   (ParamType.rr,   0x00000000000042,   [4, 4]),
-    "CHNINT":   (ParamType.rr,   0x00000000000043,   [4, 4]),
-    "CHNFLT":   (ParamType.rr,   0x00000000000044,   [4, 4]),
-    "ADD":      (ParamType.rrr,  0x0000000000001,    [4, 4, 4]),
-    "SUB":      (ParamType.rrr,  0x0000000000002,    [4, 4, 4]),
-    "MUL":      (ParamType.rrr,  0x0000000000003,    [4, 4, 4]),
-    "DIV":      (ParamType.rrr,  0x0000000000004,    [4, 4, 4]),
-    "FADD":     (ParamType.rrr,  0x0000000000011,    [4, 4, 4]),
-    "FSUB":     (ParamType.rrr,  0x0000000000012,    [4, 4, 4]),
-    "FMUL":     (ParamType.rrr,  0x0000000000013,    [4, 4, 4]),
-    "FDIV":     (ParamType.rrr,  0x0000000000014,    [4, 4, 4]),
-    "AND":      (ParamType.rrr,  0x0000000000031,    [4, 4, 4]),
-    "OR":       (ParamType.rrr,  0x0000000000032,    [4, 4, 4]),
-    "XOR":      (ParamType.rrr,  0x0000000000033,    [4, 4, 4]),
-    "PUSH":     (ParamType.r,    0x000000000000009,  [4]),
-    "POP":      (ParamType.r,    0x00000000000000A,  [4]),
-    "DEC":      (ParamType.r,    0x000000000000011,  [4]),
-    "INC":      (ParamType.r,    0x000000000000012,  [4]),
-    "STOR":     (ParamType.rr,   0x8,                [4, 4, 52]),
-    "STRINT":   (ParamType.ri,   0xA,                [4, 56]),
-    "STRFLT":   (ParamType.rf,   0xE,                [4, 56]),
+    "NOP":      (ParamType._,   0x0000000000000000, []),
+    "HLT":      (ParamType._,   0xFFFFFFFFFFFFFFFF, []),
+    "JMP":      (ParamType.i,   0x01,               [56]),
+    "JMPZ":     (ParamType.i,   0x02,               [56]),
+    "JMPNZ":    (ParamType.i,   0x03,               [56]),
+    "JMPN":     (ParamType.i,   0x04,               [56]),
+    "JMPNN":    (ParamType.i,   0x05,               [56]),
+    "JMPOVR":   (ParamType.i,   0x06,               [56]),
+    "JMPUND":   (ParamType.i,   0x07,               [56]),
+    "JMPNORZ":  (ParamType.i,   0x08,               [56]),
+    "JMPNANDZ": (ParamType.i,   0x09,               [56]),
+    "JMPR":     (ParamType.r,   0x11,               [4,52]),
+    "LOADMEM":  (ParamType.rr,  0x0A,               [4, 4, 48]),
+    "LDINT":    (ParamType.ri,  0x9,                [4, 56]),
+    "LDFLT":    (ParamType.rf,  0xB,                [4, 56]),
+    "MOV":      (ParamType.rr,  0xC0000000000000,   [4, 4]),
+    "COMP":     (ParamType.rr,  0x00000000000021,   [4, 4]),
+    "NOT":      (ParamType.rr,  0x00000000F00340,   [4, 4]),
+    "SHFTL":    (ParamType.rr,  0x00000000F00350,   [4, 4]),
+    "SHFTR":    (ParamType.rr,  0x00000000F00360,   [4, 4]),
+    "ABVAL":    (ParamType.rr,  0x00000000000041,   [4, 4]),
+    "CHNSGN":   (ParamType.rr,  0x00000000000042,   [4, 4]),
+    "CHNINT":    (ParamType.rr, 0x00000000000043,   [4, 4]),
+    "CHNFLT":    (ParamType.rr, 0x00000000000044,   [4, 4]),
+    "ADD":      (ParamType.rrr, 0x0000000000001,    [4, 4, 4]),
+    "SUB":      (ParamType.rrr, 0x0000000000002,    [4, 4, 4]),
+    "MUL":      (ParamType.rrr, 0x0000000000003,    [4, 4, 4]),
+    "DIV":      (ParamType.rrr, 0x0000000000004,    [4, 4, 4]),
+    "FADD":     (ParamType.rrr, 0x0000000000011,    [4, 4, 4]),
+    "FSUB":     (ParamType.rrr, 0x0000000000012,    [4, 4, 4]),
+    "FMUL":     (ParamType.rrr, 0x0000000000013,    [4, 4, 4]),
+    "FDIV":     (ParamType.rrr, 0x0000000000014,    [4, 4, 4]),
+    "AND":      (ParamType.rrr, 0x0000000000031,    [4, 4, 4]),
+    "OR":       (ParamType.rrr, 0x0000000000032,    [4, 4, 4]),
+    "XOR":      (ParamType.rrr, 0x0000000000033,    [4, 4, 4]),
+    "PUSH":     (ParamType.r,   0x000000000000009,  [4]),
+    "POP":      (ParamType.r,   0x00000000000000A,  [4]),
+    "DEC":      (ParamType.r,   0x000000000000011,  [4]),
+    "INC":      (ParamType.r,   0x000000000000012,  [4]),
+    "STOR":     (ParamType.rr,  0x8,                [4, 4, 52]),
+    "STRINT":   (ParamType.ri,  0xA,                [4, 56]),
+    "STRFLT":   (ParamType.rf,  0xE,                [4, 56]),
 }
 
 tokens = [
@@ -399,21 +399,24 @@ t_ignore = " \t"
 
 
 def t_FLOAT(t):
-    r"(?:-[ \t]*)?\d+\.\d+([Ee][+-]?\d+)?"
-    t.value = float(t.value)
+    r"(?:(?P<sign>-)[ \t]*)?(?P<number>\d+\.\d+([Ee][+-]?\d+)?)"
+    sign = "" if t.lexer.lexmatch.group("sign") == None else "-"
+    t.value = float(sign + t.lexer.lexmatch.group("number"))
     return t
 
 def t_INT(t):
-    r"(?:-[ \t]*)?(?i:0(X[\dA-F]+|O[0-7]+|B[01]+)|\d+)"
+    r"(?i:(?:(?P<sign>-)[ \t]*)?(?P<number>0(?:X[\dA-F]+|O[0-7]+|B[01]+)|\d+))"
+    sign = "" if t.lexer.lexmatch.group("sign") == None else "-"
+    num = t.lexer.lexmatch.group("number")
     prefix = {
         "0x": 16,
         "0o": 8,
         "0b": 2
     }
-    num, base = t.value, 10
-    if len(t.value) > 1 and t.value[:2] in prefix:
-        num, base = t.value[2:], prefix[t.value]
-    t.value = int(num, base)
+    if len(num) > 2:
+        base = prefix.get(num[:2], 10)
+    else: base = 10
+    t.value = int(sign + num, base)
     return t
 
 def t_error(t):

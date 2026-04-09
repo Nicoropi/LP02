@@ -2,6 +2,7 @@ import ply.lex as lex
 from pc.ram import RAM
 import sys
 import os
+import re
 
 tokens = ("STRING", "BINARY", "NUMBER")
 
@@ -30,10 +31,14 @@ class LinkerLoader:
 
     def __init__(self):
         self.labels = {}
+        self.dir_offset = 0
+        self.text_dir_offset = self.dir_offset
+        self.data_dir_offset = self.dir_offset
         self.text_dirs = {}
         self.text = []
         self.data = []
         self.data_replace = {}
+        self.text_replace = {}
 
     def _skip_empty_strings(self, tokens, i):
         while (
@@ -44,26 +49,32 @@ class LinkerLoader:
             i += 1
         return i
 
-    def load_object(self, filename):
+    def load_object(self, files: list[str]):
         lexer = lex.lex()
+        for file in files:
+            self.current_file = file
+            try:
+                with open(file) as f:
+                    content = f.read()
+            except FileNotFoundError:
+                print(f"No se encontro el archivo {file}")
 
-        with open(filename) as f:
-            content = f.read()
+            lexer.input(content)
 
-        lexer.input(content)
+            tokens = []
+            while tok := lexer.token():
+                tokens.append(tok)
 
-        tokens = []
-        while tok := lexer.token():
-            tokens.append(tok)
-
-        self._parse(tokens)
+            self._parse(tokens)
+            self.text_dir_offset = len(self.text) + self.dir_offset
+            self.data_dir_offset = len(self.data) + self.dir_offset
+            print(f"{self.text_dir_offset=}, {self.data_dir_offset=}")
     
     def _parse(self, tokens):
         i = 0
-        # LABELS
-        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value == "":
 
-            i = self._skip_empty_strings(tokens, i)
+        # TEXT LABELS
+        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
 
             if i + 1 >= len(tokens):
                 raise Exception("Formato inválido en labels")
@@ -71,14 +82,24 @@ class LinkerLoader:
             label = tokens[i].value
             addr = tokens[i + 1].value
 
-            self.labels[label] = addr
+            self.labels[label] = addr + self.text_dir_offset
             i += 2
+        i += 1
         
-        # TEXT REPLACE 
-        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value == "":
-            i += 1
+        # DATA LABELS
+        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
 
-            i = self._skip_empty_strings(tokens, i)
+            if i + 1 >= len(tokens):
+                raise Exception("Formato inválido en labels")
+
+            label = tokens[i].value
+            addr = tokens[i + 1].value
+
+            self.labels[label] = addr + self.data_dir_offset - self.dir_offset
+            i += 2
+        i += 1
+        # TEXT REPLACE 
+        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
             label = tokens[i].value
             i += 1
 
@@ -87,8 +108,16 @@ class LinkerLoader:
 
             count = tokens[i].value
             i += 1
-            # saltar pares
-            i += count * 2
+            pos_info = []
+            for _ in range(count):
+                if i + 1 >= len(tokens):
+                    raise Exception("Formato inválido en posiciones")
+                start = tokens[i].value
+                length = tokens[i + 1].value
+                pos_info.append((self.text_dir_offset - self.dir_offset + start//64, start % 64, length))
+                i += 2
+            self.text_replace[label] = pos_info
+        i += 1
 
         # TEXT DIRECTIONS
         i = self._skip_empty_strings(tokens, i)
@@ -107,7 +136,7 @@ class LinkerLoader:
             if i + 1 >= len(tokens):
                 raise Exception("Formato inválido en text_dirs")
 
-            dir_val = tokens[i].value
+            dir_val = tokens[i].value + self.text_dir_offset
             i += 1
 
             count = tokens[i].value
@@ -120,7 +149,7 @@ class LinkerLoader:
 
                 start = tokens[i].value
                 length = tokens[i + 1].value
-                positions.append((start, length))
+                positions.append((start + (self.text_dir_offset - self.dir_offset) * 64, length))
                 i += 2
 
             self.text_dirs[dir_val] = positions
@@ -164,14 +193,13 @@ class LinkerLoader:
                     for _ in range(count):
                         if i >= len(tokens):
                             raise Exception("Formato inválido en data_replace posiciones")
-                        positions.append(tokens[i].value)
+                        positions.append(tokens[i].value + self.data_dir_offset - self.dir_offset)
                         i += 1
 
                     self.data_replace[label] = positions
 
                     i = self._skip_empty_strings(tokens, i)
 
-        print(">> i:", i, "token:", tokens[i] if i < len(tokens) else "EOF")
 
         i = self._skip_empty_strings(tokens, i)
 
@@ -216,6 +244,20 @@ class LinkerLoader:
 
             for pos in positions:
                 self.data[pos] = addr
+        
+        for label, positions in self.text_replace.items():
+            if label not in self.labels:
+                raise Exception(f"Label no definido: {label}")
+            
+            addr = self.labels[label]
+            for index, start_bit, length in positions:
+                length = min(length, 64 - start_bit)
+                mask = (1 << length) - 1
+                trunk = addr & mask
+                shift = 64 - start_bit - length
+                self.text[index] &= ~(mask << shift) #asegurar 0's en el lugar de reemplazamiento
+                self.text[index] |= trunk << shift
+            
 
     def load_to_ram(self, ram, start=0):
         addr = start
@@ -253,19 +295,30 @@ def main():
     # Formato:  py linker_loader.py <nombre_archivo.o> <direccion>
 
     if len(sys.argv) < 2:
-        print("Uso: python linker_loader.py <archivo_objeto> [direccion]")
+        print("Uso: python linker_loader.py <archivo.o> [otros.o]... [--dir=<direccion>]")
         sys.exit(1)
 
-    obj_file = sys.argv[1]
+    obj_files = []
 
 
-    base = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    base = 0
+    for arg in sys.argv[1:]:
+        match = re.match(r"--dir=(.+)", arg)
+        if match:
+            num = match.group(1)
+            if num.isdigit():
+                base = int(num)
+            else:
+                print(f"Dirrección {num} invalida")
+        else:
+            obj_files.append(arg)
+            
 
     ram = RAM()
     linker = LinkerLoader()
 
     try:
-        linker.load_object(obj_file)
+        linker.load_object(obj_files)
         linker.resolve(base)
         linker.resolve_data()
         entry = linker.load_to_ram(ram, start=base)
@@ -275,10 +328,40 @@ def main():
 
     print(f"Programa cargado desde dirección {entry}")
 
-    print("\nContenido en RAM:")
-    for i in range(base, base + 10):
-        val = ram.request(0, i, 0)
-        print(f"RAM[{i}] = {val:#018x}")
+    # print("\nContenido en RAM:")
+    # for i in range(base, base + 10):
+    #     val = ram.request(0, i, 0)
+    #     print(f"RAM[{i}] = {val:#018x}")
+    
+    from pc.register import Registers
+    from pc.alu      import Alu
+    from pc.fpu      import FPU
+    from pc.cpu      import CPU
+    from pc.loader   import Loader
+    
+    reg  = Registers()
+    fpu = FPU(reg)
+    alu  = Alu(reg, fpu)
+    cpu  = CPU(ram, reg, alu)
+
+    MAX_RAM = 2 ** 16
+    
+    # Inicializar PC y SP
+    reg.PC = base
+    reg.SP = MAX_RAM - 1
+
+    # print(f"  Programa: {filename}")
+    print(f"  PC: {base}  |  SP: {reg.SP}")
+
+    #Ejecutar
+    # return
+    try:
+        cpu.run()
+    except KeyboardInterrupt:
+        print(reg.PC, reg.SP)
+    
+    print(f"  Detenida tras {cpu.cycle_count} ciclos")
+    cpu.dump_registers()
 
 if __name__ == "__main__":
     main()
