@@ -271,17 +271,6 @@ class LinkerLoader:
         if not self.text or self.text[-1] != 0xFFFFFFFFFFFFFFFF:
             ram.request(data=0xFFFFFFFFFFFFFFFF, direction=addr, control=1)
             addr += 1
-        # ---
-        
-        data_start = addr
-        new_labels = {}
-        for label, addr_label in self.labels.items():
-            if addr_label >= len(self.text):
-                new_labels[label] = addr_label + data_start
-            else:
-                new_labels[label] = addr_label
-
-        self.labels = new_labels
 
         # LOAD DATA
         for word in self.data:
@@ -289,29 +278,58 @@ class LinkerLoader:
             addr += 1
 
         return self.labels.get("main", start)
+    
+    def load_to_file(self, output_file):
+        with open(output_file, "w") as file:
+            file.write("#TEXT SECTION\n")
+            for word in self.text:
+                file.write(f"0x{word:016X}\n")
+            file.write("#DATA SECTION\n")
+            for word in self.data:
+                file.write(f"0x{word:016X}\n")
 
 def main():
 
     # Formato:  py linker_loader.py <nombre_archivo.o> <direccion>
 
     if len(sys.argv) < 2:
-        print("Uso: python linker_loader.py <archivo.o> [otros.o]... [--dir=<direccion>]")
+        print("Uso: python linker_loader.py <archivo> [otros]... [-o resultado] [--dir=<direccion>]")
         sys.exit(1)
 
     obj_files = []
 
 
     base = 0
-    for arg in sys.argv[1:]:
+    out_file = None
+    arg_itr = iter(sys.argv[1:])
+    for arg in arg_itr:
         match = re.match(r"--dir=(.+)", arg)
-        if match:
+        
+        if match is not None:
             num = match.group(1)
             if num.isdigit():
                 base = int(num)
-            else:
-                print(f"Dirrección {num} invalida")
-        else:
-            obj_files.append(arg)
+                continue
+            if num[:2] == "0b":
+                if re.match(r"[^0-1]", num[2:]) is not None:
+                    print("Error: numero binario invalido despues de \"--dir\"", file=sys.stderr)
+                    return
+                base = int(num[2:], 2)
+                
+            elif num[:2] == "0b":
+                if re.match(r"[^0-1]", num[2:]) is not None:
+                    print("Error: numero binario invalido despues de \"--dir\"", file=sys.stderr)
+                    return
+                base = int(num[2:], 2)
+                        
+        if arg == "-o":
+            out_file = next(arg_itr, None)
+            if out_file is None:
+                print("Error: no se especifico archivo despues de \"-o\"", file=sys.stderr)
+                return
+            continue
+        
+        obj_files.append(arg.strip("\"'"))
             
 
     ram = RAM()
@@ -322,6 +340,10 @@ def main():
         linker.resolve(base)
         linker.resolve_data()
         entry = linker.load_to_ram(ram, start=base)
+        
+        if out_file is not None:
+            linker.load_to_file(out_file)
+            return
     except Exception as e:
         print(f"Error durante linking/loading: {e}")
         sys.exit(1)
