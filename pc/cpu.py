@@ -137,17 +137,18 @@ class CPU:
                 self.reg.PC = jump_addr
             return
 
-        # JMP NORZ — salta si N=0 AND Z=0
+        # JMP NORZ — salta si N=1 OR Z=1
         if opcode8 == 0x08:
-            if not (self.reg.flags["N"] or self.reg.flags["Z"]):
+            if self.reg.flags["N"] or self.reg.flags["Z"]:
                 self.reg.PC = jump_addr
             return
 
-        # JMP NANDZ — salta si N=0 OR Z=0
+        # JMP NANDZ — salta si N=1 AND Z=1
         if opcode8 == 0x09:
-            if not (self.reg.flags["N"] and self.reg.flags["Z"]):
+            if self.reg.flags["N"] and self.reg.flags["Z"]:
                 self.reg.PC = jump_addr
             return
+        
         # JMP REG - salta a la direccion del registro
         if opcode8 == 0x11:
             reg_x = (instr >> 52) & 0xF
