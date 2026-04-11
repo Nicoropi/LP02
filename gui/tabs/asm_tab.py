@@ -124,9 +124,32 @@ def build_asm_tab(parent, pc_bridge=None):
         on_assemble()
         on_load()
 
+    def on_save_disk():
+        if pc_bridge is None or not hasattr(pc_bridge, "disk"):
+            return
+        
+        asm_text = ""
+        try:
+            asm_text = asm_box.get("1.0", "end-1c")
+        except Exception:
+            asm_text = ""
+        if not asm_text or not asm_text.strip():
+            return
+        
+        path = simpledialog.askstring("Save to Disk", "Path (e.g., programas/fibonacci):")
+        if not path:
+            return
+        
+        try:
+            pc_bridge.disk.write_file(path, asm_text)
+        except Exception as e:
+            simpledialog.showerror("Error", f"Could not save file: {e}")
+            
     btn_assm = ctk.CTkButton(top_bar, text="Assemble", command=on_assemble)
     btn_load = ctk.CTkButton(top_bar, text="Load File", command=on_load)
     btn_both = ctk.CTkButton(top_bar, text="Assemble & Load", command=on_assemble_load)
+    btn_save = ctk.CTkButton(top_bar, text="Save to Disk", command=on_save_disk)
+    btn_save.pack(side="right", padx=6, pady=6)
     btn_both.pack(side="right", padx=6, pady=6)
     btn_load.pack(side="right", padx=6, pady=6)
     btn_assm.pack(side="right", padx=6, pady=6)

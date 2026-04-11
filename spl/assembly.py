@@ -3,6 +3,12 @@ from ply import lex
 from enum import Enum, auto
 from struct import pack #para conversion a binario
 
+REGISTERS = {
+    'PC': 0x1, 'SP': 0x2, 'BP': 0x3, 'IR': 0x4, 
+    'RA': 0x5, 'RB': 0x6, 'RC': 0x7, 'RD': 0x8, 'RE': 0x9,
+    'R1': 0xA, 'R2': 0xB, 'R3': 0xC, 'R4': 0xD, 'R5': 0xE,
+}
+
 class ParamType(Enum):
     _   = auto()    #sin parametros
     r   = auto()    #un registro
@@ -39,8 +45,52 @@ class ParamType(Enum):
             return False
         if type == "ID": type = "INT"
         return params[position] == type, params[position]
-        
 
+INSTRUCTION: dict[str, tuple[ParamType, int, list[int]]] = {
+    "NOP":      (ParamType._,    0x0000000000000000, []),
+    "HLT":      (ParamType._,    0xFFFFFFFFFFFFFFFF, []),
+    "JMP":      (ParamType.i,    0x01,               [56]),
+    "JMPZ":     (ParamType.i,    0x02,               [56]),
+    "JMPNZ":    (ParamType.i,    0x03,               [56]),
+    "JMPN":     (ParamType.i,    0x04,               [56]),
+    "JMPNN":    (ParamType.i,    0x05,               [56]),
+    "JMPOVR":   (ParamType.i,    0x06,               [56]),
+    "JMPUND":   (ParamType.i,    0x07,               [56]),
+    "JMPNORZ":  (ParamType.i,    0x08,               [56]),
+    "JMPNANDZ": (ParamType.i,    0x09,               [56]),
+    "JMPR":     (ParamType.i,    0x11,               [56]),
+    "LOADMEM":  (ParamType.rr,   0x0A,               [4, 4, 52]),
+    "LDINT":    (ParamType.ri,   0x9,                [4, 56]),
+    "LDFLT":    (ParamType.rf,   0xB,                [4, 56]),
+    "MOV":      (ParamType.rr,   0xC0000000000000,   [4, 4]),
+    "COMP":     (ParamType.rr,   0x00000000000021,   [4, 4]),
+    "NOT":      (ParamType.rr,   0x00000000F00340,   [4, 4]),
+    "SHFTL":    (ParamType.rr,   0x00000000F00350,   [4, 4]),
+    "SHFTR":    (ParamType.rr,   0x00000000F00360,   [4, 4]),
+    "ABVAL":    (ParamType.rr,   0x00000000000041,   [4, 4]),
+    "CHNSGN":   (ParamType.rr,   0x00000000000042,   [4, 4]),
+    "CHNINT":   (ParamType.rr,   0x00000000000043,   [4, 4]),
+    "CHNFLT":   (ParamType.rr,   0x00000000000044,   [4, 4]),
+    "ADD":      (ParamType.rrr,  0x0000000000001,    [4, 4, 4]),
+    "SUB":      (ParamType.rrr,  0x0000000000002,    [4, 4, 4]),
+    "MUL":      (ParamType.rrr,  0x0000000000003,    [4, 4, 4]),
+    "DIV":      (ParamType.rrr,  0x0000000000004,    [4, 4, 4]),
+    "FADD":     (ParamType.rrr,  0x0000000000011,    [4, 4, 4]),
+    "FSUB":     (ParamType.rrr,  0x0000000000012,    [4, 4, 4]),
+    "FMUL":     (ParamType.rrr,  0x0000000000013,    [4, 4, 4]),
+    "FDIV":     (ParamType.rrr,  0x0000000000014,    [4, 4, 4]),
+    "AND":      (ParamType.rrr,  0x0000000000031,    [4, 4, 4]),
+    "OR":       (ParamType.rrr,  0x0000000000032,    [4, 4, 4]),
+    "XOR":      (ParamType.rrr,  0x0000000000033,    [4, 4, 4]),
+    "PUSH":     (ParamType.r,    0x000000000000009,  [4]),
+    "POP":      (ParamType.r,    0x00000000000000A,  [4]),
+    "DEC":      (ParamType.r,    0x000000000000011,  [4]),
+    "INC":      (ParamType.r,    0x000000000000012,  [4]),
+    "STOR":     (ParamType.rr,   0x8,                [4, 4, 52]),
+    "STRINT":   (ParamType.ri,   0xA,                [4, 56]),
+    "STRFLT":   (ParamType.rf,   0xE,                [4, 56]),
+}
+        
 class Builder:
     _readableModes: dict[str, str] = {
         "b":            "{0:#064b}\n",
@@ -319,64 +369,12 @@ class Builder:
             out.write(self.encodeText())
             out.write(self.encodeData())
             
-
-REGISTERS = {
-    'PC': 0x1, 'SP': 0x2, 'BP': 0x3, 'IR': 0x4, 'RA': 0x5,
-    'RB': 0x6, 'RC': 0x7, 'RD': 0x8, 'RE': 0x9,
-    'R1': 0xA, 'R2': 0xB, 'R3': 0xC, 'R4': 0xD, 'R5': 0xE,
-}
-
 current_file = ""
 lastNewLinePos = 0
 
 #instruction mappea un lexema de instruccion a:
 # (tipo_parametros, codigo_base, [largo_parametros])
 #ej add (ParamType.rrr, 0x0000000000001, [4, 4, 4])
-
-INSTRUCTION: dict[str, tuple[ParamType, int, list[int]]] = {
-    "NOP":      (ParamType._,    0x0000000000000000, []),
-    "HLT":      (ParamType._,    0xFFFFFFFFFFFFFFFF, []),
-    "JMP":      (ParamType.i,    0x01,               [56]),
-    "JMPZ":     (ParamType.i,    0x02,               [56]),
-    "JMPNZ":    (ParamType.i,    0x03,               [56]),
-    "JMPN":     (ParamType.i,    0x04,               [56]),
-    "JMPNN":    (ParamType.i,    0x05,               [56]),
-    "JMPOVR":   (ParamType.i,    0x06,               [56]),
-    "JMPUND":   (ParamType.i,    0x07,               [56]),
-    "JMPNORZ":  (ParamType.i,    0x08,               [56]),
-    "JMPNANDZ": (ParamType.i,    0x09,               [56]),
-    "JMPR":     (ParamType.i,    0x11,               [56]),
-    "LOADMEM":  (ParamType.rr,   0x0A,               [4, 4, 52]),
-    "LDINT":    (ParamType.ri,   0x9,                [4, 56]),
-    "LDFLT":    (ParamType.rf,   0xB,                [4, 56]),
-    "MOV":      (ParamType.rr,   0xC0000000000000,   [4, 4]),
-    "COMP":     (ParamType.rr,   0x00000000000021,   [4, 4]),
-    "NOT":      (ParamType.rr,   0x00000000F00340,   [4, 4]),
-    "SHFTL":    (ParamType.rr,   0x00000000F00350,   [4, 4]),
-    "SHFTR":    (ParamType.rr,   0x00000000F00360,   [4, 4]),
-    "ABVAL":    (ParamType.rr,   0x00000000000041,   [4, 4]),
-    "CHNSGN":   (ParamType.rr,   0x00000000000042,   [4, 4]),
-    "CHNINT":   (ParamType.rr,   0x00000000000043,   [4, 4]),
-    "CHNFLT":   (ParamType.rr,   0x00000000000044,   [4, 4]),
-    "ADD":      (ParamType.rrr,  0x0000000000001,    [4, 4, 4]),
-    "SUB":      (ParamType.rrr,  0x0000000000002,    [4, 4, 4]),
-    "MUL":      (ParamType.rrr,  0x0000000000003,    [4, 4, 4]),
-    "DIV":      (ParamType.rrr,  0x0000000000004,    [4, 4, 4]),
-    "FADD":     (ParamType.rrr,  0x0000000000011,    [4, 4, 4]),
-    "FSUB":     (ParamType.rrr,  0x0000000000012,    [4, 4, 4]),
-    "FMUL":     (ParamType.rrr,  0x0000000000013,    [4, 4, 4]),
-    "FDIV":     (ParamType.rrr,  0x0000000000014,    [4, 4, 4]),
-    "AND":      (ParamType.rrr,  0x0000000000031,    [4, 4, 4]),
-    "OR":       (ParamType.rrr,  0x0000000000032,    [4, 4, 4]),
-    "XOR":      (ParamType.rrr,  0x0000000000033,    [4, 4, 4]),
-    "PUSH":     (ParamType.r,    0x000000000000009,  [4]),
-    "POP":      (ParamType.r,    0x00000000000000A,  [4]),
-    "DEC":      (ParamType.r,    0x000000000000011,  [4]),
-    "INC":      (ParamType.r,    0x000000000000012,  [4]),
-    "STOR":     (ParamType.rr,   0x8,                [4, 4, 52]),
-    "STRINT":   (ParamType.ri,   0xA,                [4, 56]),
-    "STRFLT":   (ParamType.rf,   0xE,                [4, 56]),
-}
 
 tokens = [
     "FLOAT",
@@ -396,7 +394,6 @@ states = (
 literals = [",", ":"]
 
 t_ignore = " \t"
-
 
 def t_FLOAT(t):
     r"(?:-[ \t]*)?\d+\.\d+([Ee][+-]?\d+)?"

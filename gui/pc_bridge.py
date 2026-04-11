@@ -13,6 +13,7 @@ class PCBridge:
         from pc.fpu import FPU
         from pc.cpu import CPU
         from pc.loader import Loader
+        from pc.disk import Disk, DiskDevice
 
         self._loaded = False
         # Hardware modules
@@ -24,6 +25,10 @@ class PCBridge:
 
         self._base_addr = base_addr
         self.loader = Loader(start_address=base_addr)
+
+        # Disk
+        self.disk = Disk()
+        self.disk_device = DiskDevice(self.disk)
 
     def load_program(self, path: str, base_addr: int = 0) -> int:
         """Load a program into RAM and initialize PC/SP. Returns entry point."""
