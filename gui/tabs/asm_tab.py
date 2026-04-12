@@ -1,5 +1,4 @@
 import hashlib
-import os
 
 import tkinter as tk
 import customtkinter as ctk
@@ -36,7 +35,7 @@ def get_bin_box_text():
 
 
 def load_program(pc_bridge):
-    # Load program directly from the content of the bin_box (hex bytes text)
+    # Load program directly from the content of the bin_box
     try:
         bin_text = get_bin_box_text()
     except Exception:
@@ -44,19 +43,41 @@ def load_program(pc_bridge):
     if not bin_text or not bin_text.strip():
         return
 
-    # Treat bin_text as raw binary data (latin-1 encoding preserves byte values 0-255)
-    data_bytes = None
-    if bin_text:
-        data_bytes = bin_text.encode("latin-1")
-    if not data_bytes or len(data_bytes) == 0:
+    bin_text = bin_text.strip()
+
+    # Parse hex lines from bin_box (format: 0xXXXXXXXXXXXXXXXX)
+    lines = [
+        line.strip()
+        for line in bin_text.splitlines()
+        if line.strip() and not line.startswith("#")
+    ]
+
+    if not lines:
         return
 
-    import tempfile, os
+    # Try to parse as hex values
+    words = []
+    for line in lines:
+        try:
+            # Handle hex format: 0x...
+            if line.startswith("0x") or line.startswith("0X"):
+                words.append(int(line, 16))
+            # Handle binary format: 0b...
+            elif line.startswith("0b") or line.startswith("0B"):
+                words.append(int(line, 2))
+            # Handle plain decimal
+            elif line.isdigit():
+                words.append(int(line))
+            else:
+                # Try to parse anyway
+                words.append(int(line, 0))
+        except ValueError:
+            continue
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as tmp:
-        tmp.write(data_bytes)
-        tmp_path = tmp.name
+    if not words:
+        return
 
+    # Get base address
     base_addr = 0
     try:
         addr = simpledialog.askinteger(
@@ -66,15 +87,17 @@ def load_program(pc_bridge):
             base_addr = addr
     except Exception:
         base_addr = 0
-    try:
-        pc_bridge.load_program(tmp_path, base_addr=base_addr)
-    except Exception:
-        pass
-    finally:
-        try:
-            os.remove(tmp_path)
-        except Exception:
-            pass
+
+    # Load directly to RAM using the same approach as linker_loader.load_to_ram
+    addr = base_addr
+    for word in words:
+        pc_bridge.ram.request(data=word, direction=addr, control=1)
+        addr += 1
+
+    # Set PC and SP
+    pc_bridge.reg.PC = base_addr
+    pc_bridge.reg.SP = 2**16 - 1
+    pc_bridge._loaded = True
 
 
 def build_asm_tab(parent, pc_bridge=None):
@@ -127,7 +150,7 @@ def build_asm_tab(parent, pc_bridge=None):
     def on_save_disk():
         if pc_bridge is None or not hasattr(pc_bridge, "disk"):
             return
-        
+
         asm_text = ""
         try:
             asm_text = asm_box.get("1.0", "end-1c")
@@ -135,16 +158,18 @@ def build_asm_tab(parent, pc_bridge=None):
             asm_text = ""
         if not asm_text or not asm_text.strip():
             return
-        
-        path = simpledialog.askstring("Save to Disk", "Path (e.g., programas/fibonacci):")
+
+        path = simpledialog.askstring(
+            "Save to Disk", "Path (e.g., programas/fibonacci):"
+        )
         if not path:
             return
-        
+
         try:
             pc_bridge.disk.write_file(path, asm_text)
         except Exception as e:
             simpledialog.showerror("Error", f"Could not save file: {e}")
-            
+
     btn_assm = ctk.CTkButton(top_bar, text="Assemble", command=on_assemble)
     btn_load = ctk.CTkButton(top_bar, text="Load File", command=on_load)
     btn_both = ctk.CTkButton(top_bar, text="Assemble & Load", command=on_assemble_load)

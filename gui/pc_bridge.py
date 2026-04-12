@@ -119,3 +119,24 @@ class PCBridge:
             "ram_start": ram_start,
             "flags": normalized,
         }
+
+    def get_ram_window(self, start: int, length: int = 256) -> tuple[list[int], int]:
+        """Get a specific RAM window starting at given address.
+
+        Args:
+            start: Starting address (0 to MAX_RAM-1)
+            length: Number of words to read (default 256)
+
+        Returns:
+            tuple: (list of values, actual_start_address)
+        """
+        start = max(0, min(start, MAX_RAM - 1))
+        length = min(length, MAX_RAM - start)
+        dump = []
+        try:
+            for i in range(start, start + length):
+                val = self.ram.request(0, i, 0)
+                dump.append(val if isinstance(val, int) else 0)
+        except Exception:
+            dump = []
+        return dump, start

@@ -4,31 +4,41 @@ import sys
 import os
 import re
 
-tokens = ("STRING", "BINARY", "NUMBER")
+tokens = ("STRING", "BINARY", "HEX", "NUMBER")
 
 t_ignore = " \t\n"
+
 
 def t_STRING(t):
     r'"[^"]*"'
     t.value = t.value.strip('"')
     return t
 
+
 def t_BINARY(t):
-    r'0b[01]+'
+    r"0b[01]+"
     t.value = int(t.value[2:], 2)
     return t
 
+
+def t_HEX(t):
+    r"0x[0-9a-fA-F]+"
+    t.value = int(t.value[2:], 16)
+    return t
+
+
 def t_NUMBER(t):
-    r'\d+'
+    r"\d+"
     t.value = int(t.value)
     return t
+
 
 def t_error(t):
     print(f"Token ilegal: {t.value[0]}")
     t.lexer.skip(1)
 
-class LinkerLoader:
 
+class LinkerLoader:
     def __init__(self):
         self.labels = {}
         self.dir_offset = 0
@@ -69,13 +79,14 @@ class LinkerLoader:
             self.text_dir_offset = len(self.text) + self.dir_offset
             self.data_dir_offset = len(self.data) + self.dir_offset
             print(f"{self.text_dir_offset=}, {self.data_dir_offset=}")
-    
+
     def _parse(self, tokens):
         i = 0
 
         # TEXT LABELS
-        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
-
+        while (
+            i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0"
+        ):
             if i + 1 >= len(tokens):
                 raise Exception("Formato inválido en labels")
 
@@ -85,10 +96,11 @@ class LinkerLoader:
             self.labels[label] = addr + self.text_dir_offset
             i += 2
         i += 1
-        
-        # DATA LABELS
-        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
 
+        # DATA LABELS
+        while (
+            i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0"
+        ):
             if i + 1 >= len(tokens):
                 raise Exception("Formato inválido en labels")
 
@@ -98,8 +110,10 @@ class LinkerLoader:
             self.labels[label] = addr + self.data_dir_offset - self.dir_offset
             i += 2
         i += 1
-        # TEXT REPLACE 
-        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
+        # TEXT REPLACE
+        while (
+            i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0"
+        ):
             label = tokens[i].value
             i += 1
 
@@ -114,7 +128,7 @@ class LinkerLoader:
                     raise Exception("Formato inválido en posiciones")
                 start = tokens[i].value
                 length = tokens[i + 1].value
-                pos_info.append((self.text_dir_offset - self.dir_offset + start//64, start % 64, length))
+                pos_info.append((start, length))
                 i += 2
             self.text_replace[label] = pos_info
         i += 1
@@ -126,8 +140,10 @@ class LinkerLoader:
 
         i = self._skip_empty_strings(tokens, i)
 
-        if i >= len(tokens) or tokens[i].type not in ("NUMBER", "BINARY"):
-            raise Exception(f"Se esperaba número en TEXT DIRS, encontrado {tokens[i].type}")
+        if i >= len(tokens) or tokens[i].type not in ("NUMBER", "BINARY", "HEX"):
+            raise Exception(
+                f"Se esperaba número en TEXT DIRS, encontrado {tokens[i].type}"
+            )
 
         n_dirs = tokens[i].value
         i += 1
@@ -149,7 +165,9 @@ class LinkerLoader:
 
                 start = tokens[i].value
                 length = tokens[i + 1].value
-                positions.append((start + (self.text_dir_offset - self.dir_offset) * 64, length))
+                positions.append(
+                    (start + (self.text_dir_offset - self.dir_offset) * 64, length)
+                )
                 i += 2
 
             self.text_dirs[dir_val] = positions
@@ -159,7 +177,7 @@ class LinkerLoader:
 
         i = self._skip_empty_strings(tokens, i)
 
-        if tokens[i].type not in ("NUMBER", "BINARY"):
+        if tokens[i].type not in ("NUMBER", "BINARY", "HEX"):
             raise Exception("Se esperaba número en TEXT SECTION")
 
         n_text = tokens[i].value
@@ -169,13 +187,13 @@ class LinkerLoader:
             if i >= len(tokens):
                 break
 
-            if tokens[i].type not in ("NUMBER", "BINARY"):
+            if tokens[i].type not in ("NUMBER", "BINARY", "HEX"):
                 break
 
             self.text.append(tokens[i].value)
             i += 1
 
-            # DATA REPLACE 
+            # DATA REPLACE
             i = self._skip_empty_strings(tokens, i)
 
             if i < len(tokens) and tokens[i].type == "STRING":
@@ -192,30 +210,34 @@ class LinkerLoader:
                     positions = []
                     for _ in range(count):
                         if i >= len(tokens):
-                            raise Exception("Formato inválido en data_replace posiciones")
-                        positions.append(tokens[i].value + self.data_dir_offset - self.dir_offset)
+                            raise Exception(
+                                "Formato inválido en data_replace posiciones"
+                            )
+                        positions.append(
+                            tokens[i].value + self.data_dir_offset - self.dir_offset
+                        )
                         i += 1
 
                     self.data_replace[label] = positions
 
                     i = self._skip_empty_strings(tokens, i)
 
-
         i = self._skip_empty_strings(tokens, i)
 
         if i >= len(tokens):
             return  # No DATA SECTION
-        
+
         # DATA SECTION
         n_data = 0
         i = self._skip_empty_strings(tokens, i)
         if i < len(tokens) and tokens[i].type in ("NUMBER", "BINARY"):
-
             n_data = tokens[i].value
             i += 1
 
             if n_data > (len(tokens) - i):
-                raise Exception("DATA inconsistente: tamaño mayor que tokens disponibles")
+                raise Exception(
+                    "DATA inconsistente: tamaño mayor que tokens disponibles"
+                )
 
             for _ in range(n_data):
                 if i >= len(tokens):
@@ -226,8 +248,7 @@ class LinkerLoader:
 
     def resolve(self, base=0):
         for addr, positions in self.text_dirs.items():
-            for (bit_pos, bit_len) in positions:
-
+            for bit_pos, bit_len in positions:
                 instr_index = bit_pos // 64
                 offset = bit_pos % 64
 
@@ -236,28 +257,29 @@ class LinkerLoader:
                 self.text[instr_index] |= (addr & mask) << offset
 
     def resolve_data(self):
+        text_offset = self.text_dir_offset - self.dir_offset
+        data_offset = self.data_dir_offset - self.dir_offset
+
         for label, positions in self.data_replace.items():
             if label not in self.labels:
                 raise Exception(f"Label no definido: {label}")
-
-            addr = self.labels[label]
-
+            addr = self.labels[label] + data_offset
             for pos in positions:
                 self.data[pos] = addr
-        
+
         for label, positions in self.text_replace.items():
             if label not in self.labels:
                 raise Exception(f"Label no definido: {label}")
-            
-            addr = self.labels[label]
-            for index, start_bit, length in positions:
+            addr = self.labels[label] + text_offset
+            for start, length in positions:
+                index = start // 64
+                start_bit = start % 64
                 length = min(length, 64 - start_bit)
                 mask = (1 << length) - 1
                 trunk = addr & mask
                 shift = 64 - start_bit - length
-                self.text[index] &= ~(mask << shift) #asegurar 0's en el lugar de reemplazamiento
+                self.text[index] &= ~(mask << shift)
                 self.text[index] |= trunk << shift
-            
 
     def load_to_ram(self, ram, start=0):
         addr = start
@@ -278,7 +300,7 @@ class LinkerLoader:
             addr += 1
 
         return self.labels.get("main", start)
-    
+
     def load_to_file(self, output_file):
         with open(output_file, "w") as file:
             file.write("#TEXT SECTION\n")
@@ -288,23 +310,24 @@ class LinkerLoader:
             for word in self.data:
                 file.write(f"0x{word:016X}\n")
 
-def main():
 
+def main():
     # Formato:  py linker_loader.py <nombre_archivo.o> <direccion>
 
     if len(sys.argv) < 2:
-        print("Uso: python linker_loader.py <archivo> [otros]... [-o resultado] [--dir=<direccion>]")
+        print(
+            "Uso: python linker_loader.py <archivo> [otros]... [-o resultado] [--dir=<direccion>]"
+        )
         sys.exit(1)
 
     obj_files = []
-
 
     base = 0
     out_file = None
     arg_itr = iter(sys.argv[1:])
     for arg in arg_itr:
         match = re.match(r"--dir=(.+)", arg)
-        
+
         if match is not None:
             num = match.group(1)
             if num.isdigit():
@@ -312,25 +335,32 @@ def main():
                 continue
             if num[:2] == "0b":
                 if re.match(r"[^0-1]", num[2:]) is not None:
-                    print("Error: numero binario invalido despues de \"--dir\"", file=sys.stderr)
+                    print(
+                        'Error: numero binario invalido despues de "--dir"',
+                        file=sys.stderr,
+                    )
                     return
                 base = int(num[2:], 2)
-                
+
             elif num[:2] == "0b":
                 if re.match(r"[^0-1]", num[2:]) is not None:
-                    print("Error: numero binario invalido despues de \"--dir\"", file=sys.stderr)
+                    print(
+                        'Error: numero binario invalido despues de "--dir"',
+                        file=sys.stderr,
+                    )
                     return
                 base = int(num[2:], 2)
-                        
+
         if arg == "-o":
             out_file = next(arg_itr, None)
             if out_file is None:
-                print("Error: no se especifico archivo despues de \"-o\"", file=sys.stderr)
+                print(
+                    'Error: no se especifico archivo despues de "-o"', file=sys.stderr
+                )
                 return
             continue
-        
+
         obj_files.append(arg.strip("\"'"))
-            
 
     ram = RAM()
     linker = LinkerLoader()
@@ -340,7 +370,7 @@ def main():
         linker.resolve(base)
         linker.resolve_data()
         entry = linker.load_to_ram(ram, start=base)
-        
+
         if out_file is not None:
             linker.load_to_file(out_file)
             return
@@ -354,20 +384,20 @@ def main():
     # for i in range(base, base + 10):
     #     val = ram.request(0, i, 0)
     #     print(f"RAM[{i}] = {val:#018x}")
-    
-    from pc.register import Registers
-    from pc.alu      import Alu
-    from pc.fpu      import FPU
-    from pc.cpu      import CPU
-    from pc.loader   import Loader
-    
-    reg  = Registers()
-    fpu = FPU(reg)
-    alu  = Alu(reg, fpu)
-    cpu  = CPU(ram, reg, alu)
 
-    MAX_RAM = 2 ** 16
-    
+    from pc.register import Registers
+    from pc.alu import Alu
+    from pc.fpu import FPU
+    from pc.cpu import CPU
+    from pc.loader import Loader
+
+    reg = Registers()
+    fpu = FPU(reg)
+    alu = Alu(reg, fpu)
+    cpu = CPU(ram, reg, alu)
+
+    MAX_RAM = 2**16
+
     # Inicializar PC y SP
     reg.PC = base
     reg.SP = MAX_RAM - 1
@@ -375,15 +405,16 @@ def main():
     # print(f"  Programa: {filename}")
     print(f"  PC: {base}  |  SP: {reg.SP}")
 
-    #Ejecutar
+    # Ejecutar
     # return
     try:
         cpu.run()
     except KeyboardInterrupt:
         print(reg.PC, reg.SP)
-    
+
     print(f"  Detenida tras {cpu.cycle_count} ciclos")
     cpu.dump_registers()
+
 
 if __name__ == "__main__":
     main()
