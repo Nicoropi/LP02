@@ -1,69 +1,70 @@
 import ply.lex as lex
 import sys
 
-tokens = ( 'INCLUIR', 'DEFINIR', 'IDENTIFIER', 'TEXT' )
+tokens = ("INCLUIR", "DEFINIR", "IDENTIFIER", "TEXT")
+
 
 def preprocess(data):
     defines = {}
     buffer = ""
+    memory = []
+    loaded_files = {}
 
-    #====================================#
-    #               Tokens               #
-    #====================================#
+    def add_to_memory(name, text):
+        words = text.split()
+        start = len(memory)
+        memory.extend(words)
+        loaded_files[name] = (start, len(words))
+
+    # Token: include
     def t_INCLUIR(t):
-        r'%[ ]*include[ ]+[^\n]+'
+        r"%[ ]*include[ ]+[^\n]+"
+        nonlocal buffer
         parts = t.value.split()
         filename = parts[-1]
 
         try:
-            with open(filename, 'r') as f:
-                nonlocal buffer
-                buffer += f.read()
+            with open(filename, "r") as f:
+                content = f.read()
+            add_to_memory(filename, content)
+            buffer += content
         except:
             print(f"Error: no se pudo abrir {filename}")
 
     def t_DEFINIR(t):
-        r'%[ ]*define[ ]+[a-zA-Z_][a-zA-Z0-9_]*[ ]+[^\n]+'
+        r"%[ ]*define[ ]+[a-zA-Z_][a-zA-Z0-9_]*[ ]+[^\n]+"
         parts = t.value.split()
         name = parts[-2]
         value = parts[-1]
         defines[name] = value
 
     def t_IDENTIFIER(t):
-        r'[a-zA-Z_][a-zA-Z0-9_]*'
+        r"[a-zA-Z_][a-zA-Z0-9_]*"
         nonlocal buffer
         buffer += t.value + " "
 
     def t_TEXT(t):
-        r'.|\n'
+        r".|\n"
         nonlocal buffer
         buffer += t.value
 
-    t_ignore = ''
+    t_ignore = ""
 
     def t_error(t):
         t.lexer.skip(1)
 
-    #====================================#
-    #                Lexer               #
-    #====================================#
     lexer = lex.lex()
     lexer.input(data)
 
-    #====================================#
-    #              Ejecucion             #
-    #====================================#
     while lexer.token():
         pass
 
-    result = []
-    for word in buffer.split():
+    result = buffer.split()
+    for i, word in enumerate(result):
         if word in defines:
-            result.append(defines[word])
-        else:
-            result.append(word)
+            result[i] = defines[word]
 
-    return " ".join(result)
+    return " ".join(result), loaded_files
 
 
 if __name__ == "__main__":
@@ -80,5 +81,8 @@ if __name__ == "__main__":
         print(f"Error: no se pudo abrir {filename}")
         sys.exit(1)
 
-    output = preprocess(data)
+    output, loaded = preprocess(data)
     print(output)
+    print("\nLoaded files:")
+    for name, (start, count) in loaded.items():
+        print(f"  {name}: start={start}, count={count}")
