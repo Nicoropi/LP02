@@ -1,200 +1,138 @@
 import ply.lex as lex
 
-tokens = (
-    "IDENTIFIER",
-    "NUMBER",
-    "STRING",
-    "EQ",
-    "NE",
-    "GT",
-    "LT",
-    "GE",
-    "LE",
-    "PLUS",
-    "MINUS",
-    "TIMES",
-    "DIV",
-    "INC",
-    "DEC",
-    "COLON",
-    "COMMA",
-    "LBRACKET",
-    "RBRACKET",
-    "LPAREN",
-    "RPAREN",
-    "NEWLINE",
-    "ASSIGN",
-    "LET",
-    "IF",
-    "ELSE",
-    "WHILE",
-    "AND",
-    "OR",
-    "NOT",
-    "TRUE",
-    "FALSE",
-    "PUSH",
-    "GET",
-)
+class MyLexer:
+    
+    # 👇 tokens y reserved se quedan como atributos de clase
+    tokens = (
+        "IDENTIFIER","NUMBER","STRING","EQ","NE","GT","LT","GE","LE",
+        "PLUS","MINUS","TIMES","DIV","INC","DEC",
+        "COLON","COMMA","LBRACKET","RBRACKET","LPAREN","RPAREN",
+        "NEWLINE","ASSIGN",
+        "LET","IF","ELSE","WHILE",
+        "AND","OR","NOT",
+        "TRUE","FALSE",
+        "PUSH","GET",
+    )
 
-reserved = {
-    "let": "LET",
-    "if": "IF",
-    "else": "ELSE",
-    "while": "WHILE",
-    "and": "AND",
-    "or": "OR",
-    "not": "NOT",
-    "true": "TRUE",
-    "false": "FALSE",
-    "push": "PUSH",
-    "get": "GET",
-}
+    reserved = {
+        "let": "LET",
+        "if": "IF",
+        "else": "ELSE",
+        "while": "WHILE",
+        "and": "AND",
+        "or": "OR",
+        "not": "NOT",
+        "true": "TRUE",
+        "false": "FALSE",
+        "push": "PUSH",
+        "get": "GET",
+    }
 
-t_ignore = " \t"
+    t_ignore = " \t"
 
+    def __init__(self):
+        self.symbol_table = {}
+        self.lexer = lex.lex(module=self)
 
-def t_IDENTIFIER(t):
-    r"[a-zA-Z_][a-zA-Z0-9_]*"
-    t.type = reserved.get(t.value, "IDENTIFIER")
-    return t
+    # -------------------------
+    # Clasificación
+    # -------------------------
+    def classify_token(self, tok):
+        if tok.type in ["PLUS", "MINUS", "TIMES", "DIV", "INC", "DEC"]:
+            return "ARITHMETIC_OP"
+        elif tok.type in ["EQ", "NE", "GT", "LT", "GE", "LE"]:
+            return "RELATIONAL_OP"
+        elif tok.type in ["AND", "OR", "NOT"]:
+            return "LOGICAL_OP"
+        elif tok.type in ["LET", "IF", "ELSE", "WHILE"]:
+            return "CONTROL"
+        elif tok.type in ["TRUE", "FALSE"]:
+            return "BOOLEAN"
+        elif tok.type == "NUMBER":
+            return "LITERAL_NUMBER"
+        elif tok.type == "STRING":
+            return "LITERAL_STRING"
+        elif tok.type == "IDENTIFIER":
+            return "IDENTIFIER"
+        else:
+            return "SYMBOL"
 
+    # -------------------------
+    # Tokens (t_ functions)
+    # -------------------------
+    def t_IDENTIFIER(self, t):
+        r"[a-zA-Z_][a-zA-Z0-9_]*"
+        t.type = self.reserved.get(t.value, "IDENTIFIER")
 
-def t_NUMBER(t):
-    r"(\d+\.\d+|\d+)"
-    t.value = float(t.value) if "." in t.value else int(t.value)
-    return t
+        if t.type == "IDENTIFIER":
+            if t.value not in self.symbol_table:
+                self.symbol_table[t.value] = {
+                    "type": None,
+                    "value": None,
+                    "occurrences": []
+                }
 
+            self.symbol_table[t.value]["occurrences"].append(t.lexer.lineno)
 
-def t_STRING(t):
-    r"\"[^\"]*\"|'[^']*'"
-    return t
+        return t
 
+    def t_NUMBER(self, t):
+        r"(\d+\.\d+|\d+)"
+        t.value = float(t.value) if "." in t.value else int(t.value)
+        return t
 
-def t_EQ(t):
-    r"=="
-    return t
+    def t_STRING(self, t):
+        r"\"[^\"]*\"|'[^']*'"
+        return t
 
+    def t_EQ(self, t): r"=="; return t
+    def t_NE(self, t): r"!="; return t
+    def t_GE(self, t): r">="; return t
+    def t_LE(self, t): r"<="; return t
+    def t_GT(self, t): r">"; return t
+    def t_LT(self, t): r"<"; return t
+    def t_PLUS(self, t): r"\+"; return t
+    def t_MINUS(self, t): r"-"; return t
+    def t_TIMES(self, t): r"\*"; return t
+    def t_DIV(self, t): r"/"; return t
+    def t_INC(self, t): r"\+\+"; return t
+    def t_DEC(self, t): r"--"; return t
+    def t_COLON(self, t): r":"; return t
+    def t_COMMA(self, t): r","; return t
+    def t_LBRACKET(self, t): r"\["; return t
+    def t_RBRACKET(self, t): r"\]"; return t
+    def t_LPAREN(self, t): r"\("; return t
+    def t_RPAREN(self, t): r"\)"; return t
+    def t_ASSIGN(self, t): r"="; return t
 
-def t_NE(t):
-    r"!="
-    return t
+    def t_NEWLINE(self, t):
+        r"\n+"
+        t.lexer.lineno += len(t.value)
+        return t
 
+    def t_comment(self, t):
+        r"\#.*"
+        pass
 
-def t_GE(t):
-    r">="
-    return t
+    def t_error(self, t):
+        print(f"Illegal character '{t.value[0]}' at line {t.lexer.lineno}")
+        t.lexer.skip(1)
 
+    # -------------------------
+    # API para pipeline / GUI
+    # -------------------------
+    def analyze(self, data):
+        self.symbol_table = {}
+        self.lexer.input(data)
 
-def t_LE(t):
-    r"<="
-    return t
+        tokens_list = []
 
+        for tok in self.lexer:
+            tokens_list.append({
+                "type": tok.type,
+                "value": tok.value,
+                "line": tok.lineno,
+                "category": self.classify_token(tok)
+            })
 
-def t_GT(t):
-    r">"
-    return t
-
-
-def t_LT(t):
-    r"<"
-    return t
-
-
-def t_PLUS(t):
-    r"\+"
-    return t
-
-
-def t_MINUS(t):
-    r"-"
-    return t
-
-
-def t_TIMES(t):
-    r"\*"
-    return t
-
-
-def t_DIV(t):
-    r"/"
-    return t
-
-
-def t_INC(t):
-    r"\+\+"
-    return t
-
-
-def t_DEC(t):
-    r"--"
-    return t
-
-
-def t_COLON(t):
-    r":"
-    return t
-
-
-def t_COMMA(t):
-    r","
-    return t
-
-
-def t_LBRACKET(t):
-    r"\["
-    return t
-
-
-def t_RBRACKET(t):
-    r"\]"
-    return t
-
-
-def t_LPAREN(t):
-    r"\("
-    return t
-
-
-def t_RPAREN(t):
-    r"\)"
-    return t
-
-
-def t_ASSIGN(t):
-    r"="
-    return t
-
-
-def t_NEWLINE(t):
-    r"\n+"
-    t.lexer.lineno += len(t.value)
-    return t
-
-
-def t_error(t):
-    print(f"Illegal character '{t.value[0]}' at line {t.lexer.lineno}")
-    t.lexer.skip(1)
-
-
-def t_comment(t):
-    r"\#.*"
-    t.lexer.lineno += t.value.count("\n")
-    pass
-
-
-lexer = lex.lex()
-
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) < 2:
-        print("Usage: python lexer.py <source_file>")
-        sys.exit(1)
-
-    with open(sys.argv[1], "r") as f:
-        data = f.read()
-
-    lexer.input(data)
-    for tok in lexer:
-        print(f"{tok.type:10} {tok.value}")
+        return tokens_list, self.symbol_table
