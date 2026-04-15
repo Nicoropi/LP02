@@ -9,18 +9,9 @@ try:
 except Exception:
     GLOBAL_PALETTE = {}
 
-# Optional: import the Assembler class for GUI usage
-try:
-    import spl.assembly as _assembly_module  # type: ignore
-
-    _ASSEMBLER_CLASS = getattr(_assembly_module, "Assembler", None)
-except Exception:
-    _ASSEMBLER_CLASS = None
+from spl.assembly import Assembler 
 
 
-# ====================================#
-#              Functions              #
-# ====================================#
 bin_box = None  # module-level reference to expose current binary textbox content
 
 
@@ -32,7 +23,6 @@ def get_bin_box_text():
     except Exception:
         pass
     return ""
-
 
 def load_program(pc_bridge):
     # Load program directly from the content of the bin_box
@@ -122,23 +112,13 @@ def build_asm_tab(parent, pc_bridge=None):
             asm_text = asm_box.get("1.0", "end-1c")
         except Exception:
             asm_text = ""
-        if _ASSEMBLER_CLASS is not None:
-            assembler = _ASSEMBLER_CLASS()
-            bin_lines = assembler.assemble_text_as_binary(asm_text)
-            bin_box.configure(state="normal")
-            bin_box.delete("1.0", "end")
-            bin_box.insert("1.0", "\n".join(bin_lines))
-            bin_box.configure(state="disabled")
-        else:
-            lines = [l.strip() for l in asm_text.splitlines() if l.strip()]
-            results = [
-                hashlib.sha256(line.encode("utf-8")).hexdigest()[:16].upper()
-                for line in lines
-            ]
-            bin_box.configure(state="normal")
-            bin_box.delete("1.0", "end")
-            bin_box.insert("1.0", "\n".join(results))
-            bin_box.configure(state="disabled")
+
+        assembler = Assembler()
+        bin_lines = assembler.assemble_text_as_binary(asm_text)
+        bin_box.configure(state="normal")
+        bin_box.delete("1.0", "end")
+        bin_box.insert("1.0", "\n".join(bin_lines))
+        bin_box.configure(state="disabled")
 
     def on_load():
         load_program(pc_bridge)

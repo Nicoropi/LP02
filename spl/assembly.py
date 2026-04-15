@@ -526,6 +526,72 @@ def main():
     if builder._inst: builder.instructionEnd(last_pos)
     builder.write(out_file)
         
+#=======================#
+#       GUI API         #
+#=======================#
+
+class Assembler:
+
+    def __init__(self, readable="hex"):
+        self.readable = readable
+
+    def assemble_text_as_binary(self, text: str) -> list[str]:
+        builder = self.assemble_text(text)
+
+        # Convertir a formato legible (hex)
+        output = []
+        for word in builder._textOutput:
+            output.append(f"0b{word:064b}")
+
+        return output
+
+    def assemble_text(self, text: str) -> Builder:
+        global lastNewLinePos, current_file
+
+        current_file = "<input>"
+        lastNewLinePos = 0
+
+        lexer = lex.lex()
+        lexer.input(text)
+
+        builder = Builder(self.readable)
+        last_pos = "<input>:1:1"
+
+        while tok := lexer.token():
+            pos = f"<input>:{lexer.lineno}:{lexer.lexpos - lastNewLinePos}"
+
+            if tok.type == "INST":
+                builder.checkExpected(last_pos)
+                builder.instruction(tok.value, pos)
+
+            elif tok.type in ["REG", "INT", "FLOAT", "ID"]:
+                builder.checkExpected(last_pos)
+                builder.parameter(tok.type, tok.value, pos)
+
+            elif tok.value == ";":
+                builder.instructionEnd(last_pos)
+                builder.checkExpected(last_pos)
+
+            elif tok.value in literals:
+                builder.literal(tok.value, last_pos)
+
+            elif tok.type == "SECTION":
+                builder.checkExpected(last_pos)
+                builder.section(tok.value, pos)
+
+            elif tok.type == "LBL_DEF":
+                builder.checkExpected(last_pos)
+                builder.labelDef(tok.value, pos)
+
+            last_pos = pos
+
+        if builder._inst:
+            builder.instructionEnd(last_pos)
+
+        if builder._hasErrors:
+            raise Exception("Errores en ensamblado")
+
+        return builder
 
 if __name__ == "__main__":
     main()

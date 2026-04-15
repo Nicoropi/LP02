@@ -1,12 +1,8 @@
 MAX_RAM = 2**16
-
-# Window size (in RAM words) to render in the UI by default.
 RAM_WINDOW_WORDS = 256
-
 
 class PCBridge:
     def __init__(self, base_addr: int = 0):
-        # Lazy import to avoid heavy import during GUI startup if not used
         from pc.ram import RAM
         from pc.register import Registers
         from pc.alu import Alu
@@ -60,23 +56,14 @@ class PCBridge:
         except Exception:
             pass
 
-        # RAM dump (windowed, not dumping the entire 64K in the UI for perf)
-        ram_dump = []
-        ram_start = 0
-        try:
-            if hasattr(self.ram, "request"):
-                window = RAM_WINDOW_WORDS
-                pc_val = regs.get("PC", 0)
-                start = 0
-                if isinstance(pc_val, int):
-                    start = max(0, min(pc_val - window // 2, MAX_RAM - window))
-                ram_start = start
-                for i in range(start, start + window):
-                    val = self.ram.request(0, i, 0)
-                    ram_dump.append(val if isinstance(val, int) else 0)
-        except Exception:
-            ram_dump = []
-            ram_start = 0
+        pc_val = regs.get("PC", 0)
+
+        if isinstance(pc_val, int):
+            start = max(0, min(pc_val - RAM_WINDOW_WORDS // 2, MAX_RAM - RAM_WINDOW_WORDS))
+        else:
+            start = 0
+
+        ram_dump, ram_start = self.get_ram_window(start, RAM_WINDOW_WORDS)
 
         # If for some reason we didn't fill ram_dump, provide a small placeholder window
         if not ram_dump:
@@ -96,6 +83,7 @@ class PCBridge:
                         flags[candidate] = int(val)
         except Exception:
             pass
+        
         # Fallbacks from ALU/CPU if available
         for src in (self.alu, self.cpu):
             for k in ("ZERO", "CARRY", "NEG", "OVERFLOW", "ZERO_FLAG", "CARRY_FLAG"):
@@ -121,22 +109,19 @@ class PCBridge:
         }
 
     def get_ram_window(self, start: int, length: int = 256) -> tuple[list[int], int]:
-        """Get a specific RAM window starting at given address.
-
-        Args:
-            start: Starting address (0 to MAX_RAM-1)
-            length: Number of words to read (default 256)
-
-        Returns:
-            tuple: (list of values, actual_start_address)
-        """
         start = max(0, min(start, MAX_RAM - 1))
         length = min(length, MAX_RAM - start)
+
         dump = []
-        try:
-            for i in range(start, start + length):
+
+        if not hasattr(self.ram, "request"):
+            return [0] * length, start
+
+        for i in range(start, start + length):
+            try:
                 val = self.ram.request(0, i, 0)
                 dump.append(val if isinstance(val, int) else 0)
-        except Exception:
-            dump = []
+            except Exception:
+                dump.append(0)
+
         return dump, start
