@@ -1,12 +1,12 @@
 LDINT RA, 48
 LDINT RB, 18
 {while}
-COMP RA, RB         
-JMPZ 10               
+COMP RA, RB
+JMPZ 10
 JMPN 8
-JMP  6      
-SUB RA, RA, RB        
+JMP  6
+SUB RA, RA, RB
 JMP while
-SUB RB, RB, RA        
+SUB RB, RB, RA
 JMP while
-HLT                
+HLT

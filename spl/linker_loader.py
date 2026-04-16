@@ -28,7 +28,6 @@ def t_error(t):
     t.lexer.skip(1)
 
 class LinkerLoader:
-
     def __init__(self):
         self.labels = {}
         self.dir_offset = 0
@@ -230,10 +229,12 @@ class LinkerLoader:
 
                 instr_index = bit_pos // 64
                 offset = bit_pos % 64
+                shift = 64 - offset - bit_len
 
                 mask = (1 << bit_len) - 1
 
-                self.text[instr_index] |= (addr & mask) << offset
+                self.text[instr_index] &= ~(mask << shift)  # limpiar
+                self.text[instr_index] |= (addr & mask) << shift
 
     def resolve_data(self):
         for label, positions in self.data_replace.items():
@@ -289,7 +290,6 @@ class LinkerLoader:
                 file.write(f"0x{word:016X}\n")
 
 def main():
-
     # Formato:  py linker_loader.py <nombre_archivo.o> <direccion>
 
     if len(sys.argv) < 2:

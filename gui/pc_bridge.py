@@ -1,3 +1,5 @@
+from spl.linker_loader import LinkerLoader
+
 MAX_RAM = 2**16
 RAM_WINDOW_WORDS = 256
 
@@ -8,7 +10,6 @@ class PCBridge:
         from pc.alu import Alu
         from pc.fpu import FPU
         from pc.cpu import CPU
-        from pc.loader import Loader
         from pc.disk import Disk, DiskDevice
 
         self._loaded = False
@@ -20,19 +21,10 @@ class PCBridge:
         self.cpu = CPU(self.ram, self.reg, self.alu)
 
         self._base_addr = base_addr
-        self.loader = Loader(start_address=base_addr)
 
         # Disk
         self.disk = Disk()
         self.disk_device = DiskDevice(self.disk)
-
-    def load_program(self, path: str, base_addr: int = 0) -> int:
-        """Load a program into RAM and initialize PC/SP. Returns entry point."""
-        entry = self.loader.load(path, self.ram)
-        self.reg.PC = entry
-        self.reg.SP = MAX_RAM - 1
-        self._loaded = True
-        return entry
 
     def get_state(self) -> dict:
         # PC and SP

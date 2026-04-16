@@ -25,49 +25,19 @@ def get_bin_box_text():
     return ""
 
 def load_program(pc_bridge):
-    # Load program directly from the content of the bin_box
+    if pc_bridge is None:
+        return
+
+    # Obtener contenido del bin_box (salida del assembler)
     try:
         bin_text = get_bin_box_text()
     except Exception:
         bin_text = ""
+
     if not bin_text or not bin_text.strip():
         return
 
-    bin_text = bin_text.strip()
-
-    # Parse hex lines from bin_box (format: 0xXXXXXXXXXXXXXXXX)
-    lines = [
-        line.strip()
-        for line in bin_text.splitlines()
-        if line.strip() and not line.startswith("#")
-    ]
-
-    if not lines:
-        return
-
-    # Try to parse as hex values
-    words = []
-    for line in lines:
-        try:
-            # Handle hex format: 0x...
-            if line.startswith("0x") or line.startswith("0X"):
-                words.append(int(line, 16))
-            # Handle binary format: 0b...
-            elif line.startswith("0b") or line.startswith("0B"):
-                words.append(int(line, 2))
-            # Handle plain decimal
-            elif line.isdigit():
-                words.append(int(line))
-            else:
-                # Try to parse anyway
-                words.append(int(line, 0))
-        except ValueError:
-            continue
-
-    if not words:
-        return
-
-    # Get base address
+    # Dirección base
     base_addr = 0
     try:
         addr = simpledialog.askinteger(
@@ -78,16 +48,42 @@ def load_program(pc_bridge):
     except Exception:
         base_addr = 0
 
-    # Load directly to RAM using the same approach as linker_loader.load_to_ram
-    addr = base_addr
-    for word in words:
-        pc_bridge.ram.request(data=word, direction=addr, control=1)
-        addr += 1
+    try:
+        # =========================
+        # 1. Crear archivo temporal (.o)
+        # =========================
+        import tempfile
+        import os
 
-    # Set PC and SP
-    pc_bridge.reg.PC = base_addr
-    pc_bridge.reg.SP = 2**16 - 1
-    pc_bridge._loaded = True
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".o", mode="w")
+        tmp_path = tmp.name
+        tmp.write(bin_text)
+        tmp.close()
+
+        # =========================
+        # 2. Usar LinkerLoader
+        # =========================
+        from spl.linker_loader import LinkerLoader
+
+        linker = LinkerLoader()
+        linker.load_object([tmp_path])
+        linker.resolve(base_addr)
+        linker.resolve_data()
+
+        entry = linker.load_to_ram(pc_bridge.ram, start=base_addr)
+
+        # =========================
+        # 3. Configurar CPU
+        # =========================
+        pc_bridge.reg.PC = entry
+        pc_bridge.reg.SP = 2**16 - 1
+        pc_bridge._loaded = True
+
+        # limpiar archivo temporal
+        os.remove(tmp_path)
+
+    except Exception as e:
+        print(f"Error loading program:\n{e}")
 
 
 def build_asm_tab(parent, pc_bridge=None):
@@ -114,7 +110,7 @@ def build_asm_tab(parent, pc_bridge=None):
             asm_text = ""
 
         assembler = Assembler()
-        bin_lines = assembler.assemble_text_as_binary(asm_text)
+        bin_lines = assembler.assemble_text_as_object(asm_text)
         bin_box.configure(state="normal")
         bin_box.delete("1.0", "end")
         bin_box.insert("1.0", "\n".join(bin_lines))

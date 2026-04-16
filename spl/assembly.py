@@ -538,12 +538,26 @@ class Assembler:
     def assemble_text_as_binary(self, text: str) -> list[str]:
         builder = self.assemble_text(text)
 
-        # Convertir a formato legible (hex)
         output = []
         for word in builder._textOutput:
             output.append(f"0b{word:064b}")
 
         return output
+
+    def assemble_text_as_object(self, text: str) -> list[str]:
+        builder = self.assemble_text(text)
+
+        # Forzar modo legible (IMPORTANTE)
+        builder._readable = builder._readableModes["dec"]
+
+        output = ""
+
+        output += builder.encodeLabels()
+        output += builder.encodeText()
+        output += builder.encodeData()
+
+        # convertir a lista de líneas (lo que espera tu GUI)
+        return [line for line in output.splitlines() if line.strip()]
 
     def assemble_text(self, text: str) -> Builder:
         global lastNewLinePos, current_file
