@@ -1,6 +1,6 @@
 import ply.lex as lex
 
-class MyLexer:
+class Lexer:
     
     # 👇 tokens y reserved se quedan como atributos de clase
     tokens = (
@@ -91,12 +91,12 @@ class MyLexer:
     def t_LE(self, t): r"<="; return t
     def t_GT(self, t): r">"; return t
     def t_LT(self, t): r"<"; return t
+    def t_INC(self, t): r"\+\+"; return t
+    def t_DEC(self, t): r"--"; return t
     def t_PLUS(self, t): r"\+"; return t
     def t_MINUS(self, t): r"-"; return t
     def t_TIMES(self, t): r"\*"; return t
     def t_DIV(self, t): r"/"; return t
-    def t_INC(self, t): r"\+\+"; return t
-    def t_DEC(self, t): r"--"; return t
     def t_COLON(self, t): r":"; return t
     def t_COMMA(self, t): r","; return t
     def t_LBRACKET(self, t): r"\["; return t
@@ -136,3 +136,32 @@ class MyLexer:
             })
 
         return tokens_list, self.symbol_table
+    
+def main():
+    import sys
+    
+    lexer = Lexer()
+
+    if len(sys.argv) < 2:
+        print("Uso: python test_lexer.py <archivo>")
+        return
+
+    path = sys.argv[1]
+
+    try:
+        with open(path, "r") as f:
+            code = f.read()
+    except FileNotFoundError:
+        print(f"No se encontró el archivo: {path}")
+        return
+
+    tokens, table = lexer.analyze(code)
+
+    for t in tokens:
+        print(f"{t['line']:>2} | {t['type']:<12} | {t['value']}")
+
+    print("\nSymbol table:")
+    print(table)
+
+if __name__ == "__main__":
+    main()
