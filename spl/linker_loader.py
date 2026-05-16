@@ -1,389 +1,173 @@
 import ply.lex as lex
-from pc.ram import RAM
+import ply.yacc as yacc
+from  pc.ram import RAM
 import sys
+import json
 import os
 import re
 
-tokens = ("STRING", "BINARY", "NUMBER")
+tokens = ("TEXTLABELS", "DATALABELS", "TEXTSEC", "DATASEC", "INT", "ID", "REF")
 
-t_ignore = " \t\n"
+literals = [":", "{", "}", "\n"]
 
-def t_STRING(t):
-    r'"[^"]*"'
-    t.value = t.value.strip('"')
+t_ignore = " \t"
+
+def t_TEXTLABELS(t): r"TextLabels"; return t
+def t_DATALABELS(t): r"DataLabels"; return t
+def t_TEXTSEC(t): r"TextSection"; return t
+def t_DATASEC(t): r"DataSection"; return t
+
+def t_INT(t):
+    r"0b[01]+|0x[0-9A-Fa-f]+|\d+"
+    t.value = int(t.value, 0)
     return t
 
-def t_BINARY(t):
-    r'0b[01]+'
-    t.value = int(t.value[2:], 2)
+def t_ID(t):
+    r"[A-Za-z_]\w*"
     return t
 
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
+def t_REF(t):
+    r"\{[A-Za-z_]\w*:[^}]+\}"
+    # ejemplo: {A:0b111000}
+    label, addr = t.value[1:-1].split(":")
+    t.value = (label, int(addr, 0))
     return t
+
+def t_newline(t):
+    r"\n+"
+    t.lexer.lineno += len(t.value)
 
 def t_error(t):
-    print(f"Token ilegal: {t.value[0]}")
+    print("Símbolo inesperado:", t.value[0])
     t.lexer.skip(1)
 
-class LinkerLoader:
-    def __init__(self):
-        self.labels = {}
-        self.dir_offset = 0
-        self.text_dir_offset = self.dir_offset
-        self.data_dir_offset = self.dir_offset
-        self.text_dirs = {}
-        self.text = []
-        self.data = []
-        self.data_replace = {}
-        self.text_replace = {}
+lexer = lex.lex()
 
-    def _skip_empty_strings(self, tokens, i):
-        while (
-            i < len(tokens)
-            and tokens[i].type == "STRING"
-            and tokens[i].value in ("", "\\0")
-        ):
-            i += 1
-        return i
+def p_file(p):
+    """file : sections"""
+    p[0] = p[1]
 
-    def load_object(self, files: list[str]):
-        lexer = lex.lex()
-        for file in files:
-            self.current_file = file
-            try:
-                with open(file) as f:
-                    content = f.read()
-            except FileNotFoundError:
-                print(f"No se encontro el archivo {file}")
+def p_sections(p):
+    """sections : section sections
+                | section"""
+    if len(p) == 3:
+        result = {"text": [], "data": [], "labels": {}}
+        result["text"] = p[1]["text"] + p[2]["text"]
+        result["data"] = p[1]["data"] + p[2]["data"]
+        result["labels"] = {**p[1]["labels"], **p[2]["labels"]}
+        p[0] = result
+    else:
+        p[0] = p[1]
 
-            lexer.input(content)
 
-            tokens = []
-            while tok := lexer.token():
-                tokens.append(tok)
+def p_section_text(p):
+    """section : TEXTSEC ':' INT section_body"""
+    p[0] = {"text": p[4], "data": [], "labels": {}}
 
-            self._parse(tokens)
-            self.text_dir_offset = len(self.text) + self.dir_offset
-            self.data_dir_offset = len(self.data) + self.dir_offset
-            print(f"{self.text_dir_offset=}, {self.data_dir_offset=}")
-    
-    def _parse(self, tokens):
-        i = 0
+def p_section_data(p):
+    """section : DATASEC ':' INT section_body"""
+    p[0] = {"text": [], "data": p[4], "labels": {}}
 
-        # TEXT LABELS
-        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
+def p_section_labels(p):
+    """section : TEXTLABELS '{' label_defs '}'
+               | DATALABELS '{' label_defs '}'"""
+    p[0] = {"text": [], "data": [], "labels": p[3]}
 
-            if i + 1 >= len(tokens):
-                raise Exception("Formato inválido en labels")
+def p_label_defs(p):
+    """label_defs : ID ':' INT label_defs
+                  | ID ':' INT"""
+    if len(p) == 4:
+        p[0] = {p[1]: p[3]}
+    else:
+        d = {p[1]: p[3]}
+        d.update(p[4])
+        p[0] = d
 
-            label = tokens[i].value
-            addr = tokens[i + 1].value
+def p_section_body(p):
+    """section_body : word section_body
+                    | word"""
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = [p[1]] + p[2]
 
-            self.labels[label] = addr + self.text_dir_offset
-            i += 2
-        i += 1
+def p_word(p):
+    """word : INT
+            | REF"""
+    p[0] = p[1]
+
+def p_error(p):
+    print("Error de sintaxis", p)
+
+parser = yacc.yacc()
+
+def link(files):
+    text, data, labels = [], [], {}
+    offset_text = 0
+
+    for f in files:
+        with open(f) as file:
+            content = file.read()
+        obj = parser.parse(content, lexer=lexer)
+
+        # Ajustar etiquetas
+        for lbl, addr in obj["labels"].items():
+            labels[lbl] = addr + offset_text
         
-        # DATA LABELS
-        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
+        # Guardar secciones
+        text.extend(obj["text"])
+        data.extend(obj["data"])
+        offset_text += len(obj["text"])
 
-            if i + 1 >= len(tokens):
-                raise Exception("Formato inválido en labels")
+    return {"text": text, "data": data, "labels": labels}
 
-            label = tokens[i].value
-            addr = tokens[i + 1].value
+def loader(linked, ram, base_addr=0):
+    # Cargar instrucciones desde base_addr
+    for i, word in enumerate(linked["text"]):
+        if isinstance(word, tuple):  # referencia {label:addr}
+            label, _ = word
+            word = linked["labels"][label]
+        ram.request(word, base_addr + i, 1)  # MemWrite
 
-            self.labels[label] = addr + self.data_dir_offset - self.dir_offset
-            i += 2
-        i += 1
-        # TEXT REPLACE 
-        while i < len(tokens) and tokens[i].type == "STRING" and tokens[i].value != "\\0":
-            label = tokens[i].value
-            i += 1
+    # Cargar datos después del texto
+    base_data = base_addr + len(linked["text"])
+    for i, word in enumerate(linked["data"]):
+        ram.request(word, base_data + i, 1)
 
-            if i >= len(tokens):
-                raise Exception("Formato inválido en text_replace")
+    # opcional: escribir PC en dirección base
+    ram.request(base_addr, 0, 1) 
+    return ram
 
-            count = tokens[i].value
-            i += 1
-            pos_info = []
-            for _ in range(count):
-                if i + 1 >= len(tokens):
-                    raise Exception("Formato inválido en posiciones")
-                start = tokens[i].value
-                length = tokens[i + 1].value
-                pos_info.append((self.text_dir_offset - self.dir_offset + start//64, start % 64, length))
-                i += 2
-            self.text_replace[label] = pos_info
-        i += 1
-
-        # TEXT DIRECTIONS
-        i = self._skip_empty_strings(tokens, i)
-        if i >= len(tokens):
-            raise Exception("Formato inválido: falta TEXT DIRS")
-
-        i = self._skip_empty_strings(tokens, i)
-
-        if i >= len(tokens) or tokens[i].type not in ("NUMBER", "BINARY"):
-            raise Exception(f"Se esperaba número en TEXT DIRS, encontrado {tokens[i].type}")
-
-        n_dirs = tokens[i].value
-        i += 1
-
-        for _ in range(n_dirs):
-            if i + 1 >= len(tokens):
-                raise Exception("Formato inválido en text_dirs")
-
-            dir_val = tokens[i].value + self.text_dir_offset
-            i += 1
-
-            count = tokens[i].value
-            i += 1
-
-            positions = []
-            for _ in range(count):
-                if i + 1 >= len(tokens):
-                    raise Exception("Formato inválido en posiciones")
-
-                start = tokens[i].value
-                length = tokens[i + 1].value
-                positions.append((start + (self.text_dir_offset - self.dir_offset) * 64, length))
-                i += 2
-
-            self.text_dirs[dir_val] = positions
-        # TEXT SECTION
-        if i >= len(tokens):
-            raise Exception("Formato inválido: falta TEXT SECTION")
-
-        i = self._skip_empty_strings(tokens, i)
-
-        if tokens[i].type not in ("NUMBER", "BINARY"):
-            raise Exception("Se esperaba número en TEXT SECTION")
-
-        n_text = tokens[i].value
-        i += 1
-
-        for _ in range(n_text):
-            if i >= len(tokens):
-                break
-
-            if tokens[i].type not in ("NUMBER", "BINARY"):
-                break
-
-            self.text.append(tokens[i].value)
-            i += 1
-
-            # DATA REPLACE 
-            i = self._skip_empty_strings(tokens, i)
-
-            if i < len(tokens) and tokens[i].type == "STRING":
-                while i < len(tokens) and tokens[i].type == "STRING":
-                    label = tokens[i].value
-                    i += 1
-
-                    if i >= len(tokens):
-                        raise Exception("Formato inválido en data_replace")
-
-                    count = tokens[i].value
-                    i += 1
-
-                    positions = []
-                    for _ in range(count):
-                        if i >= len(tokens):
-                            raise Exception("Formato inválido en data_replace posiciones")
-                        positions.append(tokens[i].value + self.data_dir_offset - self.dir_offset)
-                        i += 1
-
-                    self.data_replace[label] = positions
-
-                    i = self._skip_empty_strings(tokens, i)
-
-
-        i = self._skip_empty_strings(tokens, i)
-
-        if i >= len(tokens):
-            return  # No DATA SECTION
-        
-        # DATA SECTION
-        n_data = 0
-        i = self._skip_empty_strings(tokens, i)
-        if i < len(tokens) and tokens[i].type in ("NUMBER", "BINARY"):
-
-            n_data = tokens[i].value
-            i += 1
-
-            if n_data > (len(tokens) - i):
-                raise Exception("DATA inconsistente: tamaño mayor que tokens disponibles")
-
-            for _ in range(n_data):
-                if i >= len(tokens):
-                    raise Exception("Formato inválido en DATA")
-
-                self.data.append(tokens[i].value)
-                i += 1
-
-    def resolve(self, base=0):
-        for addr, positions in self.text_dirs.items():
-            for (bit_pos, bit_len) in positions:
-
-                instr_index = bit_pos // 64
-                offset = bit_pos % 64
-                shift = 64 - offset - bit_len
-
-                mask = (1 << bit_len) - 1
-
-                self.text[instr_index] &= ~(mask << shift)  # limpiar
-                self.text[instr_index] |= (addr & mask) << shift
-
-    def resolve_data(self):
-        for label, positions in self.data_replace.items():
-            if label not in self.labels:
-                raise Exception(f"Label no definido: {label}")
-
-            addr = self.labels[label]
-
-            for pos in positions:
-                self.data[pos] = addr
-        
-        for label, positions in self.text_replace.items():
-            if label not in self.labels:
-                raise Exception(f"Label no definido: {label}")
-            
-            addr = self.labels[label]
-            for index, start_bit, length in positions:
-                length = min(length, 64 - start_bit)
-                mask = (1 << length) - 1
-                trunk = addr & mask
-                shift = 64 - start_bit - length
-                self.text[index] &= ~(mask << shift) #asegurar 0's en el lugar de reemplazamiento
-                self.text[index] |= trunk << shift
-            
-
-    def load_to_ram(self, ram, start=0):
-        addr = start
-
-        # LOAD TEXT
-        for word in self.text:
-            ram.request(data=word, direction=addr, control=1)
-            addr += 1
-
-        # TEMPORAL
-        if not self.text or self.text[-1] != 0xFFFFFFFFFFFFFFFF:
-            ram.request(data=0xFFFFFFFFFFFFFFFF, direction=addr, control=1)
-            addr += 1
-
-        # LOAD DATA
-        for word in self.data:
-            ram.request(data=word, direction=addr, control=1)
-            addr += 1
-
-        return self.labels.get("main", start)
-    
-    def load_to_file(self, output_file):
-        with open(output_file, "w") as file:
-            file.write("#TEXT SECTION\n")
-            for word in self.text:
-                file.write(f"0x{word:016X}\n")
-            file.write("#DATA SECTION\n")
-            for word in self.data:
-                file.write(f"0x{word:016X}\n")
-
-def main():
-    # Formato:  py linker_loader.py <nombre_archivo.o> <direccion>
-
-    if len(sys.argv) < 2:
-        print("Uso: python linker_loader.py <archivo> [otros]... [-o resultado] [--dir=<direccion>]")
-        sys.exit(1)
-
-    obj_files = []
-
-
-    base = 0
-    out_file = None
-    arg_itr = iter(sys.argv[1:])
-    for arg in arg_itr:
-        match = re.match(r"--dir=(.+)", arg)
-        
-        if match is not None:
-            num = match.group(1)
-            if num.isdigit():
-                base = int(num)
-                continue
-            if num[:2] == "0b":
-                if re.match(r"[^0-1]", num[2:]) is not None:
-                    print("Error: numero binario invalido despues de \"--dir\"", file=sys.stderr)
-                    return
-                base = int(num[2:], 2)
-                
-            elif num[:2] == "0b":
-                if re.match(r"[^0-1]", num[2:]) is not None:
-                    print("Error: numero binario invalido despues de \"--dir\"", file=sys.stderr)
-                    return
-                base = int(num[2:], 2)
-                        
-        if arg == "-o":
-            out_file = next(arg_itr, None)
-            if out_file is None:
-                print("Error: no se especifico archivo despues de \"-o\"", file=sys.stderr)
-                return
-            continue
-        
-        obj_files.append(arg.strip("\"'"))
-            
-
-    ram = RAM()
-    linker = LinkerLoader()
-
-    try:
-        linker.load_object(obj_files)
-        linker.resolve(base)
-        linker.resolve_data()
-        entry = linker.load_to_ram(ram, start=base)
-        
-        if out_file is not None:
-            linker.load_to_file(out_file)
-            return
-    except Exception as e:
-        print(f"Error durante linking/loading: {e}")
-        sys.exit(1)
-
-    print(f"Programa cargado desde dirección {entry}")
-
-    # print("\nContenido en RAM:")
-    # for i in range(base, base + 10):
-    #     val = ram.request(0, i, 0)
-    #     print(f"RAM[{i}] = {val:#018x}")
-    
-    from pc.register import Registers
-    from pc.alu      import Alu
-    from pc.fpu      import FPU
-    from pc.cpu      import CPU
-    from pc.loader   import Loader
-    
-    reg  = Registers()
-    fpu = FPU(reg)
-    alu  = Alu(reg, fpu)
-    cpu  = CPU(ram, reg, alu)
-
-    MAX_RAM = 2 ** 16
-    
-    # Inicializar PC y SP
-    reg.PC = base
-    reg.SP = MAX_RAM - 1
-
-    # print(f"  Programa: {filename}")
-    print(f"  PC: {base}  |  SP: {reg.SP}")
-
-    #Ejecutar
-    # return
-    try:
-        cpu.run()
-    except KeyboardInterrupt:
-        print(reg.PC, reg.SP)
-    
-    print(f"  Detenida tras {cpu.cycle_count} ciclos")
-    cpu.dump_registers()
+# Diccionario
+def export_labels(labels, filename="labels.json"):
+    dict_out = {tag: f"{addr:064b}" for tag, addr in labels.items()}
+    with open(filename, "w") as f:
+        json.dump(dict_out, f, indent=2)
+    print(f"Diccionario de etiquetas guardado en {filename}")
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 3:
+        print("Uso: python -m spl.linker_loader <archivos.o...> <salida.exe> [direccion_base]")
+        sys.exit(1)
+
+    files = sys.argv[1:-2] if len(sys.argv) > 3 else sys.argv[1:-1]
+    out_file = sys.argv[-2] if len(sys.argv) > 3 else sys.argv[-1]
+    base_addr = int(sys.argv[-1], 0) if len(sys.argv) > 3 else 0
+
+    linked = link(files)
+
+    # Exportar etiquetas a JSON
+    dict_out = {tag: f"{addr+base_addr:064b}" for tag, addr in linked["labels"].items()}
+    with open("labels.json", "w") as f:
+        json.dump(dict_out, f, indent=2)
+    print("Diccionario de etiquetas guardado en labels.json")
+
+    ram = RAM(word_size="64", positions=2**16)
+    loader(linked, ram, base_addr=base_addr)
+
+    print(f"Ejecutable generado: {out_file}")
+    print(f"Programa cargado desde dirección base {base_addr} (decimal) / {base_addr:064b} (binario)")
+    print("Primeras posiciones de RAM:")
+    for i in range(base_addr, base_addr+20):
+        print(f"RAM[{i}] = {ram.request(0, i, 0)}")
+

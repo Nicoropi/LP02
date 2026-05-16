@@ -1,0 +1,343 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> file
+Rule 1     file -> sections
+Rule 2     sections -> section sections
+Rule 3     sections -> section
+Rule 4     section -> TEXTSEC : INT section_body
+Rule 5     section -> DATASEC : INT section_body
+Rule 6     section -> TEXTLABELS { label_defs }
+Rule 7     section -> DATALABELS { label_defs }
+Rule 8     label_defs -> ID : INT label_defs
+Rule 9     label_defs -> ID : INT
+Rule 10    section_body -> word section_body
+Rule 11    section_body -> word
+Rule 12    word -> INT
+Rule 13    word -> REF
+
+Terminals, with rules where they appear
+
+:                    : 4 5 8 9
+DATALABELS           : 7
+DATASEC              : 5
+ID                   : 8 9
+INT                  : 4 5 8 9 12
+REF                  : 13
+TEXTLABELS           : 6
+TEXTSEC              : 4
+error                : 
+{                    : 6 7
+}                    : 6 7
+
+Nonterminals, with rules where they appear
+
+file                 : 0
+label_defs           : 6 7 8
+section              : 2 3
+section_body         : 4 5 10
+sections             : 1 2
+word                 : 10 11
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . file
+    (1) file -> . sections
+    (2) sections -> . section sections
+    (3) sections -> . section
+    (4) section -> . TEXTSEC : INT section_body
+    (5) section -> . DATASEC : INT section_body
+    (6) section -> . TEXTLABELS { label_defs }
+    (7) section -> . DATALABELS { label_defs }
+
+    TEXTSEC         shift and go to state 4
+    DATASEC         shift and go to state 5
+    TEXTLABELS      shift and go to state 6
+    DATALABELS      shift and go to state 7
+
+    file                           shift and go to state 1
+    sections                       shift and go to state 2
+    section                        shift and go to state 3
+
+state 1
+
+    (0) S' -> file .
+
+
+
+state 2
+
+    (1) file -> sections .
+
+    $end            reduce using rule 1 (file -> sections .)
+
+
+state 3
+
+    (2) sections -> section . sections
+    (3) sections -> section .
+    (2) sections -> . section sections
+    (3) sections -> . section
+    (4) section -> . TEXTSEC : INT section_body
+    (5) section -> . DATASEC : INT section_body
+    (6) section -> . TEXTLABELS { label_defs }
+    (7) section -> . DATALABELS { label_defs }
+
+    $end            reduce using rule 3 (sections -> section .)
+    TEXTSEC         shift and go to state 4
+    DATASEC         shift and go to state 5
+    TEXTLABELS      shift and go to state 6
+    DATALABELS      shift and go to state 7
+
+    section                        shift and go to state 3
+    sections                       shift and go to state 8
+
+state 4
+
+    (4) section -> TEXTSEC . : INT section_body
+
+    :               shift and go to state 9
+
+
+state 5
+
+    (5) section -> DATASEC . : INT section_body
+
+    :               shift and go to state 10
+
+
+state 6
+
+    (6) section -> TEXTLABELS . { label_defs }
+
+    {               shift and go to state 11
+
+
+state 7
+
+    (7) section -> DATALABELS . { label_defs }
+
+    {               shift and go to state 12
+
+
+state 8
+
+    (2) sections -> section sections .
+
+    $end            reduce using rule 2 (sections -> section sections .)
+
+
+state 9
+
+    (4) section -> TEXTSEC : . INT section_body
+
+    INT             shift and go to state 13
+
+
+state 10
+
+    (5) section -> DATASEC : . INT section_body
+
+    INT             shift and go to state 14
+
+
+state 11
+
+    (6) section -> TEXTLABELS { . label_defs }
+    (8) label_defs -> . ID : INT label_defs
+    (9) label_defs -> . ID : INT
+
+    ID              shift and go to state 16
+
+    label_defs                     shift and go to state 15
+
+state 12
+
+    (7) section -> DATALABELS { . label_defs }
+    (8) label_defs -> . ID : INT label_defs
+    (9) label_defs -> . ID : INT
+
+    ID              shift and go to state 16
+
+    label_defs                     shift and go to state 17
+
+state 13
+
+    (4) section -> TEXTSEC : INT . section_body
+    (10) section_body -> . word section_body
+    (11) section_body -> . word
+    (12) word -> . INT
+    (13) word -> . REF
+
+    INT             shift and go to state 18
+    REF             shift and go to state 21
+
+    section_body                   shift and go to state 19
+    word                           shift and go to state 20
+
+state 14
+
+    (5) section -> DATASEC : INT . section_body
+    (10) section_body -> . word section_body
+    (11) section_body -> . word
+    (12) word -> . INT
+    (13) word -> . REF
+
+    INT             shift and go to state 18
+    REF             shift and go to state 21
+
+    section_body                   shift and go to state 22
+    word                           shift and go to state 20
+
+state 15
+
+    (6) section -> TEXTLABELS { label_defs . }
+
+    }               shift and go to state 23
+
+
+state 16
+
+    (8) label_defs -> ID . : INT label_defs
+    (9) label_defs -> ID . : INT
+
+    :               shift and go to state 24
+
+
+state 17
+
+    (7) section -> DATALABELS { label_defs . }
+
+    }               shift and go to state 25
+
+
+state 18
+
+    (12) word -> INT .
+
+    INT             reduce using rule 12 (word -> INT .)
+    REF             reduce using rule 12 (word -> INT .)
+    TEXTSEC         reduce using rule 12 (word -> INT .)
+    DATASEC         reduce using rule 12 (word -> INT .)
+    TEXTLABELS      reduce using rule 12 (word -> INT .)
+    DATALABELS      reduce using rule 12 (word -> INT .)
+    $end            reduce using rule 12 (word -> INT .)
+
+
+state 19
+
+    (4) section -> TEXTSEC : INT section_body .
+
+    TEXTSEC         reduce using rule 4 (section -> TEXTSEC : INT section_body .)
+    DATASEC         reduce using rule 4 (section -> TEXTSEC : INT section_body .)
+    TEXTLABELS      reduce using rule 4 (section -> TEXTSEC : INT section_body .)
+    DATALABELS      reduce using rule 4 (section -> TEXTSEC : INT section_body .)
+    $end            reduce using rule 4 (section -> TEXTSEC : INT section_body .)
+
+
+state 20
+
+    (10) section_body -> word . section_body
+    (11) section_body -> word .
+    (10) section_body -> . word section_body
+    (11) section_body -> . word
+    (12) word -> . INT
+    (13) word -> . REF
+
+    TEXTSEC         reduce using rule 11 (section_body -> word .)
+    DATASEC         reduce using rule 11 (section_body -> word .)
+    TEXTLABELS      reduce using rule 11 (section_body -> word .)
+    DATALABELS      reduce using rule 11 (section_body -> word .)
+    $end            reduce using rule 11 (section_body -> word .)
+    INT             shift and go to state 18
+    REF             shift and go to state 21
+
+    word                           shift and go to state 20
+    section_body                   shift and go to state 26
+
+state 21
+
+    (13) word -> REF .
+
+    INT             reduce using rule 13 (word -> REF .)
+    REF             reduce using rule 13 (word -> REF .)
+    TEXTSEC         reduce using rule 13 (word -> REF .)
+    DATASEC         reduce using rule 13 (word -> REF .)
+    TEXTLABELS      reduce using rule 13 (word -> REF .)
+    DATALABELS      reduce using rule 13 (word -> REF .)
+    $end            reduce using rule 13 (word -> REF .)
+
+
+state 22
+
+    (5) section -> DATASEC : INT section_body .
+
+    TEXTSEC         reduce using rule 5 (section -> DATASEC : INT section_body .)
+    DATASEC         reduce using rule 5 (section -> DATASEC : INT section_body .)
+    TEXTLABELS      reduce using rule 5 (section -> DATASEC : INT section_body .)
+    DATALABELS      reduce using rule 5 (section -> DATASEC : INT section_body .)
+    $end            reduce using rule 5 (section -> DATASEC : INT section_body .)
+
+
+state 23
+
+    (6) section -> TEXTLABELS { label_defs } .
+
+    TEXTSEC         reduce using rule 6 (section -> TEXTLABELS { label_defs } .)
+    DATASEC         reduce using rule 6 (section -> TEXTLABELS { label_defs } .)
+    TEXTLABELS      reduce using rule 6 (section -> TEXTLABELS { label_defs } .)
+    DATALABELS      reduce using rule 6 (section -> TEXTLABELS { label_defs } .)
+    $end            reduce using rule 6 (section -> TEXTLABELS { label_defs } .)
+
+
+state 24
+
+    (8) label_defs -> ID : . INT label_defs
+    (9) label_defs -> ID : . INT
+
+    INT             shift and go to state 27
+
+
+state 25
+
+    (7) section -> DATALABELS { label_defs } .
+
+    TEXTSEC         reduce using rule 7 (section -> DATALABELS { label_defs } .)
+    DATASEC         reduce using rule 7 (section -> DATALABELS { label_defs } .)
+    TEXTLABELS      reduce using rule 7 (section -> DATALABELS { label_defs } .)
+    DATALABELS      reduce using rule 7 (section -> DATALABELS { label_defs } .)
+    $end            reduce using rule 7 (section -> DATALABELS { label_defs } .)
+
+
+state 26
+
+    (10) section_body -> word section_body .
+
+    TEXTSEC         reduce using rule 10 (section_body -> word section_body .)
+    DATASEC         reduce using rule 10 (section_body -> word section_body .)
+    TEXTLABELS      reduce using rule 10 (section_body -> word section_body .)
+    DATALABELS      reduce using rule 10 (section_body -> word section_body .)
+    $end            reduce using rule 10 (section_body -> word section_body .)
+
+
+state 27
+
+    (8) label_defs -> ID : INT . label_defs
+    (9) label_defs -> ID : INT .
+    (8) label_defs -> . ID : INT label_defs
+    (9) label_defs -> . ID : INT
+
+    }               reduce using rule 9 (label_defs -> ID : INT .)
+    ID              shift and go to state 16
+
+    label_defs                     shift and go to state 28
+
+state 28
+
+    (8) label_defs -> ID : INT label_defs .
+
+    }               reduce using rule 8 (label_defs -> ID : INT label_defs .)
+

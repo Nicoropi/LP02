@@ -86,3 +86,4 @@ if __name__ == "__main__":
     print("\nLoaded files:")
     for name, (start, count) in loaded.items():
         print(f"  {name}: start={start}, count={count}")
+    
