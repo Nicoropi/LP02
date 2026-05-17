@@ -6,7 +6,7 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = "DATALABELS DATASEC ID INT REF TEXTLABELS TEXTSECfile : sectionssections : section sections\n| sectionsection : TEXTSEC ':' INT section_bodysection : DATASEC ':' INT section_bodysection : TEXTLABELS '{' label_defs '}'\n| DATALABELS '{' label_defs '}'label_defs : ID ':' INT label_defs\n| ID ':' INTsection_body : word section_body\n| wordword : INT\n| REF"
+_lr_signature = "DATALABELS DATASEC ID INT REF TEXTLABELS TEXTSECfile : sectionssections : section sections\n                | sectionsection : TEXTSEC ':' INT section_bodysection : DATASEC ':' INT section_bodysection : TEXTLABELS '{' label_defs '}'\n               | DATALABELS '{' label_defs '}'label_defs : ID ':' INT label_defs\n                  | ID ':' INTsection_body : word section_body\n                    | wordword : INT\n            | REF"
     
 _lr_action_items = {'TEXTSEC':([0,3,18,19,20,21,22,23,25,26,],[4,4,-12,-4,-11,-13,-5,-6,-7,-10,]),'DATASEC':([0,3,18,19,20,21,22,23,25,26,],[5,5,-12,-4,-11,-13,-5,-6,-7,-10,]),'TEXTLABELS':([0,3,18,19,20,21,22,23,25,26,],[6,6,-12,-4,-11,-13,-5,-6,-7,-10,]),'DATALABELS':([0,3,18,19,20,21,22,23,25,26,],[7,7,-12,-4,-11,-13,-5,-6,-7,-10,]),'$end':([1,2,3,8,18,19,20,21,22,23,25,26,],[0,-1,-3,-2,-12,-4,-11,-13,-5,-6,-7,-10,]),':':([4,5,16,],[9,10,24,]),'{':([6,7,],[11,12,]),'INT':([9,10,13,14,18,20,21,24,],[13,14,18,18,-12,18,-13,27,]),'ID':([11,12,27,],[16,16,16,]),'REF':([13,14,18,20,21,],[21,21,-12,21,-13,]),'}':([15,17,27,28,],[23,25,-9,-8,]),}
 
@@ -27,17 +27,17 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> file","S'",1,None,None,None),
-  ('file -> sections','file',1,'p_file','linker_loader.py',46),
-  ('sections -> section sections','sections',2,'p_sections','linker_loader.py',50),
-  ('sections -> section','sections',1,'p_sections','linker_loader.py',51),
-  ('section -> TEXTSEC : INT section_body','section',4,'p_section_text','linker_loader.py',60),
-  ('section -> DATASEC : INT section_body','section',4,'p_section_data','linker_loader.py',64),
-  ('section -> TEXTLABELS { label_defs }','section',4,'p_section_labels','linker_loader.py',68),
-  ('section -> DATALABELS { label_defs }','section',4,'p_section_labels','linker_loader.py',69),
-  ('label_defs -> ID : INT label_defs','label_defs',4,'p_label_defs','linker_loader.py',73),
-  ('label_defs -> ID : INT','label_defs',3,'p_label_defs','linker_loader.py',74),
-  ('section_body -> word section_body','section_body',2,'p_section_body','linker_loader.py',83),
-  ('section_body -> word','section_body',1,'p_section_body','linker_loader.py',84),
-  ('word -> INT','word',1,'p_word','linker_loader.py',91),
-  ('word -> REF','word',1,'p_word','linker_loader.py',92),
+  ('file -> sections','file',1,'p_file','linker_loader.py',47),
+  ('sections -> section sections','sections',2,'p_sections','linker_loader.py',51),
+  ('sections -> section','sections',1,'p_sections','linker_loader.py',52),
+  ('section -> TEXTSEC : INT section_body','section',4,'p_section_text','linker_loader.py',64),
+  ('section -> DATASEC : INT section_body','section',4,'p_section_data','linker_loader.py',68),
+  ('section -> TEXTLABELS { label_defs }','section',4,'p_section_labels','linker_loader.py',72),
+  ('section -> DATALABELS { label_defs }','section',4,'p_section_labels','linker_loader.py',73),
+  ('label_defs -> ID : INT label_defs','label_defs',4,'p_label_defs','linker_loader.py',77),
+  ('label_defs -> ID : INT','label_defs',3,'p_label_defs','linker_loader.py',78),
+  ('section_body -> word section_body','section_body',2,'p_section_body','linker_loader.py',87),
+  ('section_body -> word','section_body',1,'p_section_body','linker_loader.py',88),
+  ('word -> INT','word',1,'p_word','linker_loader.py',95),
+  ('word -> REF','word',1,'p_word','linker_loader.py',96),
 ]

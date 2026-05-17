@@ -13,6 +13,7 @@ from spl.assembly import Assembler
 
 
 bin_box = None  # module-level reference to expose current binary textbox content
+asm_box_ref = None
 
 
 def get_bin_box_text():
@@ -20,6 +21,27 @@ def get_bin_box_text():
     try:
         if bin_box is not None:
             return bin_box.get("1.0", "end-1c")
+    except Exception:
+        pass
+    return ""
+
+
+def set_asm_box_text(text: str):
+    global asm_box_ref
+    if asm_box_ref is None:
+        return
+    try:
+        asm_box_ref.delete("1.0", "end")
+        asm_box_ref.insert("1.0", text or "")
+    except Exception:
+        pass
+
+
+def get_asm_box_text() -> str:
+    global asm_box_ref
+    try:
+        if asm_box_ref is not None:
+            return asm_box_ref.get("1.0", "end-1c")
     except Exception:
         pass
     return ""
@@ -49,39 +71,7 @@ def load_program(pc_bridge):
         base_addr = 0
 
     try:
-        # =========================
-        # 1. Crear archivo temporal (.o)
-        # =========================
-        import tempfile
-        import os
-
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".o", mode="w")
-        tmp_path = tmp.name
-        tmp.write(bin_text)
-        tmp.close()
-
-        # =========================
-        # 2. Usar LinkerLoader
-        # =========================
-        from spl.linker_loader import LinkerLoader
-
-        linker = LinkerLoader()
-        linker.load_object([tmp_path])
-        linker.resolve(base_addr)
-        linker.resolve_data()
-
-        entry = linker.load_to_ram(pc_bridge.ram, start=base_addr)
-
-        # =========================
-        # 3. Configurar CPU
-        # =========================
-        pc_bridge.reg.PC = entry
-        pc_bridge.reg.SP = 2**16 - 1
-        pc_bridge._loaded = True
-
-        # limpiar archivo temporal
-        os.remove(tmp_path)
-
+        pc_bridge.load_object_text(bin_text, base_addr=base_addr)
     except Exception as e:
         print(f"Error loading program:\n{e}")
 
@@ -109,8 +99,16 @@ def build_asm_tab(parent, pc_bridge=None):
         except Exception:
             asm_text = ""
 
-        assembler = Assembler()
-        bin_lines = assembler.assemble_text_as_binary(asm_text)
+        if pc_bridge is not None:
+            try:
+                obj_text = pc_bridge.assemble_asm_to_object_text(asm_text)
+                bin_lines = obj_text.splitlines()
+            except Exception as e:
+                print(f"Error assembling:\n{e}")
+                bin_lines = []
+        else:
+            assembler = Assembler()
+            bin_lines = assembler.assemble_text_as_binary(asm_text)
         bin_box.configure(state="normal")
         bin_box.delete("1.0", "end")
         bin_box.insert("1.0", "\n".join(bin_lines))
@@ -123,34 +121,9 @@ def build_asm_tab(parent, pc_bridge=None):
         on_assemble()
         on_load()
 
-    def on_save_disk():
-        if pc_bridge is None or not hasattr(pc_bridge, "disk"):
-            return
-
-        asm_text = ""
-        try:
-            asm_text = asm_box.get("1.0", "end-1c")
-        except Exception:
-            asm_text = ""
-        if not asm_text or not asm_text.strip():
-            return
-
-        path = simpledialog.askstring(
-            "Save to Disk", "Path (e.g., programas/fibonacci):"
-        )
-        if not path:
-            return
-
-        try:
-            pc_bridge.disk.write_file(path, asm_text)
-        except Exception as e:
-            simpledialog.showerror("Error", f"Could not save file: {e}")
-
     btn_assm = ctk.CTkButton(top_bar, text="Assemble", command=on_assemble)
     btn_load = ctk.CTkButton(top_bar, text="Load File", command=on_load)
     btn_both = ctk.CTkButton(top_bar, text="Assemble & Load", command=on_assemble_load)
-    btn_save = ctk.CTkButton(top_bar, text="Save to Disk", command=on_save_disk)
-    btn_save.pack(side="right", padx=6, pady=6)
     btn_both.pack(side="right", padx=6, pady=6)
     btn_load.pack(side="right", padx=6, pady=6)
     btn_assm.pack(side="right", padx=6, pady=6)
@@ -166,6 +139,9 @@ def build_asm_tab(parent, pc_bridge=None):
     asm_box = ctk.CTkTextbox(edit_frame, width=580, height=520)
     asm_box.pack(fill="both", expand=True, padx=2, pady=2)
     asm_box.insert("1.0", "LDINT RA, 48\nLDINT RB, 18\nCOMP RA, RB \n")
+
+    global asm_box_ref
+    asm_box_ref = asm_box
 
     global bin_box
     bin_box = ctk.CTkTextbox(bin_frame, width=580, height=520)

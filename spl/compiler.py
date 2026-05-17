@@ -1,5 +1,8 @@
 import ply.yacc as yacc
-from lexic_analizer import Lexer
+try:
+    from spl.lexic_analizer import Lexer
+except Exception:
+    from lexic_analizer import Lexer
 
 class SymbolTable:
     def __init__(self):

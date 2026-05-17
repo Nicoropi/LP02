@@ -52,6 +52,9 @@ class Builder:
         "b":            ("0b{0:{1}b}", 1),
         "bin":          ("0b{0:{1}b}", 1),
         "binary":       ("0b{0:{1}b}", 1),
+        "d":            ("{0:{1}d}", 1),
+        "dec":          ("{0:{1}d}", 1),
+        "decimal":      ("{0:{1}d}", 1),
         "hex":          ("0x{0:{1}X}", 4),
         "hexadecimal":  ("0x{0:{1}X}", 4),
     }
@@ -489,13 +492,15 @@ class Assembler:
         #     output.append(f"0b{word:064b}")
 
         # return output
-        builder._readable = builder._readableModes["bin"]
+        builder._format = builder._readableModes["bin"]
 
         output = ""
 
-        output += builder.encodeLabels()
-        output += builder.encodeText()
-        output += builder.encodeData()
+        output += builder.encodeLabels("Text", builder._textLabels)
+        output += builder.encodeLabels("Data", builder._dataLabels)
+        output += builder.encodeSectionOutput("Text", builder._textOutput)
+        output += "\n"
+        output += builder.encodeSectionOutput("Data", builder._dataOutput)
 
         # convertir a lista de líneas (lo que espera tu GUI)
         return [line for line in output.splitlines() if line.strip()]
@@ -508,9 +513,11 @@ class Assembler:
 
         output = ""
 
-        output += builder.encodeLabels()
-        output += builder.encodeText()
-        output += builder.encodeData()
+        output += builder.encodeLabels("Text", builder._textLabels)
+        output += builder.encodeLabels("Data", builder._dataLabels)
+        output += builder.encodeSectionOutput("Text", builder._textOutput)
+        output += "\n"
+        output += builder.encodeSectionOutput("Data", builder._dataOutput)
 
         # convertir a lista de líneas (lo que espera tu GUI)
         return [line for line in output.splitlines() if line.strip()]

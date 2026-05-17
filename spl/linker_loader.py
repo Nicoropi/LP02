@@ -123,14 +123,41 @@ def link(files):
 
 def loader(linked, ram, base_addr=0):
     # Cargar instrucciones desde base_addr
-    for i, word in enumerate(linked["text"]):
-        if isinstance(word, tuple):  # referencia {label:addr}
-            label, _ = word
-            word = linked["labels"][label]
+    # Soporta referencias relativas en formato: INT seguido de REF
+    # Ejemplo: 0x02{while_end:0x38} -> [0x02, ("while_end", 56)]
+    resolved_text = []
+    i = 0
+    text_words = linked["text"]
+    while i < len(text_words):
+        word = text_words[i]
+
+        if (
+            isinstance(word, int)
+            and i + 1 < len(text_words)
+            and isinstance(text_words[i + 1], tuple)
+        ):
+            label, bits = text_words[i + 1]
+            addr = linked["labels"][label]
+            mask = (1 << bits) - 1
+            combined = (word << bits) | (addr & mask)
+            resolved_text.append(combined)
+            i += 2
+            continue
+
+        if isinstance(word, tuple):  # referencia {label:bits} sin prefijo
+            label, bits = word
+            addr = linked["labels"][label]
+            mask = (1 << bits) - 1
+            word = addr & mask
+
+        resolved_text.append(word)
+        i += 1
+
+    for i, word in enumerate(resolved_text):
         ram.request(word, base_addr + i, 1)  # MemWrite
 
     # Cargar datos después del texto
-    base_data = base_addr + len(linked["text"])
+    base_data = base_addr + len(resolved_text)
     for i, word in enumerate(linked["data"]):
         ram.request(word, base_data + i, 1)
 

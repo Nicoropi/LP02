@@ -1,4 +1,7 @@
-from spl.linker_loader import LinkerLoader
+from __future__ import annotations
+
+import os
+import tempfile
 
 MAX_RAM = 2**16
 RAM_WINDOW_WORDS = 256
@@ -25,6 +28,74 @@ class PCBridge:
         # Disk
         self.disk = Disk()
         self.disk_device = DiskDevice(self.disk)
+
+    def compile_high_level_to_asm(self, source_text: str) -> dict:
+        if source_text is None:
+            source_text = ""
+
+        from spl.preprocessor import preprocess
+        from spl.lexic_analizer import Lexer
+
+        try:
+            from spl.compiler import Parser, CodeGenerator
+        except Exception:
+            from compiler import Parser, CodeGenerator
+
+        preprocessed, loaded_files = preprocess(source_text)
+
+        lexer = Lexer()
+        tokens, symbol_table = lexer.analyze(preprocessed)
+
+        parser = Parser()
+        ast = parser.parse(preprocessed)
+        generator = CodeGenerator()
+        asm = generator.generate(ast)
+
+        return {
+            "preprocessed": preprocessed,
+            "loaded_files": loaded_files,
+            "tokens": tokens,
+            "symbol_table": symbol_table,
+            "ast": ast,
+            "asm": asm,
+        }
+
+    def assemble_asm_to_object_text(self, asm_text: str) -> str:
+        if asm_text is None:
+            asm_text = ""
+        from spl.assembly import Assembler
+
+        assembler = Assembler()
+        obj_lines = assembler.assemble_text_as_object(asm_text)
+        return "\n".join(obj_lines)
+
+    def load_object_text(self, obj_text: str, base_addr: int = 0) -> int:
+        from spl.linker_loader import link, loader
+
+        if obj_text is None or not obj_text.strip():
+            raise ValueError("Object text is empty")
+
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".o", mode="w") as tmp:
+                tmp.write(obj_text)
+                tmp_path = tmp.name
+
+            linked = link([tmp_path])
+            loader(linked, self.ram, base_addr=base_addr)
+            entry = base_addr
+
+            self.reg.PC = entry
+            self.reg.SP = MAX_RAM - 1
+            self._loaded = True
+            return entry
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+    def assemble_and_load(self, asm_text: str, base_addr: int = 0) -> int:
+        obj_text = self.assemble_asm_to_object_text(asm_text)
+        return self.load_object_text(obj_text, base_addr=base_addr)
 
     def get_state(self) -> dict:
         # PC and SP
@@ -62,7 +133,7 @@ class PCBridge:
             ram_dump = [0] * 256
             ram_start = 0
 
-        # Flags: best-effort extraction from known attributes
+        # Flags
         flags = {}
         try:
             # Try common places for flag bits
@@ -76,20 +147,18 @@ class PCBridge:
         except Exception:
             pass
         
-        # Fallbacks from ALU/CPU if available
-        for src in (self.alu, self.cpu):
-            for k in ("ZERO", "CARRY", "NEG", "OVERFLOW", "ZERO_FLAG", "CARRY_FLAG"):
-                if hasattr(src, k) and k not in flags:
-                    try:
-                        flags[k] = int(getattr(src, k))
-                    except Exception:
-                        pass
-        # Normalize common keys to a small set
+        try:
+            if hasattr(self.reg, "flags") and isinstance(self.reg.flags, dict):
+                flags.update(self.reg.flags)
+        except Exception:
+            pass
+
         normalized = {
-            "ZERO": int(flags.get("ZERO", flags.get("ZERO_FLAG", 0))),
+            "ZERO": int(flags.get("ZERO", flags.get("ZERO_FLAG", flags.get("Z", 0)))),
             "CARRY": int(flags.get("CARRY", flags.get("CARRY_FLAG", 0))),
-            "NEG": int(flags.get("NEG", 0)),
-            "OVERFLOW": int(flags.get("OVERFLOW", 0)),
+            "NEG": int(flags.get("NEG", flags.get("N", 0))),
+            "OVERFLOW": int(flags.get("OVERFLOW", flags.get("D", 0))),
+            "UNDERFLOW": int(flags.get("UNDERFLOW", flags.get("U", 0))),
         }
         return {
             "pc": pc,

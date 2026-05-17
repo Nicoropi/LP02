@@ -7,6 +7,7 @@ import tkinter.ttk as ttk
 import customtkinter as ctk
 
 from .tabs.asm_tab import build_asm_tab
+from .tabs.high_level_tab import build_high_level_tab
 from .tabs.memory_tab import build_memory_tab, update_memory_tab
 from .pc_bridge import PCBridge
 
@@ -44,6 +45,10 @@ class VIC_GUI(ctk.CTk):
         self.asm_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.asm_tab, text="Assembly")
         build_asm_tab(self.asm_tab, pc_bridge=self.pc_bridge)
+
+        self.high_level_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.high_level_tab, text="High Level")
+        build_high_level_tab(self.high_level_tab, pc_bridge=self.pc_bridge)
 
         self.ram_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.ram_tab, text="    PC    ")
