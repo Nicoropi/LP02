@@ -484,11 +484,21 @@ class Assembler:
     def assemble_text_as_binary(self, text: str) -> list[str]:
         builder = self.assemble_text(text)
 
-        output = []
-        for word in builder._textOutput:
-            output.append(f"0b{word:064b}")
+        # output = []
+        # for word in builder._textOutput:
+        #     output.append(f"0b{word:064b}")
 
-        return output
+        # return output
+        builder._readable = builder._readableModes["bin"]
+
+        output = ""
+
+        output += builder.encodeLabels()
+        output += builder.encodeText()
+        output += builder.encodeData()
+
+        # convertir a lista de líneas (lo que espera tu GUI)
+        return [line for line in output.splitlines() if line.strip()]
 
     def assemble_text_as_object(self, text: str) -> list[str]:
         builder = self.assemble_text(text)

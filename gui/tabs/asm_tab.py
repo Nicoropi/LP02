@@ -110,7 +110,7 @@ def build_asm_tab(parent, pc_bridge=None):
             asm_text = ""
 
         assembler = Assembler()
-        bin_lines = assembler.assemble_text_as_object(asm_text)
+        bin_lines = assembler.assemble_text_as_binary(asm_text)
         bin_box.configure(state="normal")
         bin_box.delete("1.0", "end")
         bin_box.insert("1.0", "\n".join(bin_lines))
