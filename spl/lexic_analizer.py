@@ -62,6 +62,7 @@ class Lexer:
         # Booleanos
         "TRUE",
         "FALSE",
+        "NEW"
     )
 
     # =========================================================
@@ -86,7 +87,8 @@ class Lexer:
         "not": "NOT",
         # Booleanos
         "true": "TRUE",
-        "false": "FALSE"
+        "false": "FALSE",
+        "new":"NEW"
     }
 
     # Ignorar espacios y tabs
