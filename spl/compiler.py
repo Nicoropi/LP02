@@ -1,5 +1,5 @@
 import ply.yacc as yacc
-from lexic_analizer import Lexer
+from .lexic_analizer import Lexer
 
 class SymbolTable:
     def __init__(self):
@@ -57,8 +57,47 @@ class CodeGenerator:
             self.text.append(f"{instr} " + ", ".join(map(str, params)))
         else:
             section.append(f"{instr} " + ", ".join(map(str, params)))
+    def _discover_structs(self, node):
+        """
+        Pasada preliminar: Escanea el AST buscando definiciones de estructuras 
+        para registrarlas en la SymbolTable ANTES de generar código.
+        """
+        if node is None or not isinstance(node, tuple):
+            return
 
+        tag = node[0]
+
+        # Agregamos FUNC_DEF para que busque structs dentro del cuerpo de las funciones
+        if tag in ('PROGRAM', 'BLOCK'):
+            for child in node[1]:
+                self._discover_structs(child)
+        
+        elif tag == 'FUNC_DEF':
+            # node es ('FUNC_DEF', tipo, nombre, parametros, bloque_cuerpo)
+            # El bloque de código de la función está en node[4]
+            self._discover_structs(node[4])
+
+        elif tag == 'STRUCT_DEF':
+            struct_name = node[1]
+            decl_list = node[2]
+            members = []
+            
+            for decl in decl_list:
+                if decl[0] in ('DECL', 'DECL_ASSIGN'):
+                    m_type = decl[1]
+                    m_name = decl[2]
+                    m_size = 1
+                    members.append((m_type, m_name, m_size))
+                elif decl[0] == 'DECL_ARRAY':
+                    m_type = decl[1]
+                    m_name = decl[2]
+                    m_size = int(decl[3])
+                    members.append((m_type, m_name, m_size))
+            
+            self.st.define_struct(struct_name, members)
+            
     def generate(self, ast):
+        self._discover_structs(ast)
         self.visit(ast)
         return "data:\n" + "\n".join(self.data) + "\ntext:\n" + "\n".join(self.text) + "\nHLT\n" + "\n".join(self.functions)
 
@@ -68,12 +107,25 @@ class CodeGenerator:
         section = self.functions if in_func else None
         
         if not isinstance(node, tuple):
-            if isinstance(node, (int, float)): self.emit("LDINT", "R5", node, section=section)
-            if isinstance(node, str): # It's a variable name
+            # 1. Manejo de literales numéricos
+            if isinstance(node, (int, float)): 
+                self.emit("LDINT", "R5", node, section=section)
+                return node
+                
+            # 2. Manejo de palabras clave booleanas literales
+            if isinstance(node, str) and node in ("true", "false"):
+                val = 1 if node == "true" else 0
+                self.emit("LDINT", "R5", val, section=section)
+                return node
+                
+            # 3. Manejo de variables reales (Cualquier otro string)
+            if isinstance(node, str): 
                 var = self.st.lookup(node)
                 self.emit("LDINT", "R5", var['offset'], section=section)
                 self.emit("ADD", "R5", "BP", "R5", section=section)
                 self.emit("LOADMEM", "R5", "R5", section=section)
+                return node
+                
             return node
         
         tag = node[0]
@@ -86,7 +138,10 @@ class CodeGenerator:
             self.st.enter_scope()
             for stmt in node[1]: self.visit(stmt, in_func)
             self.st.exit_scope()
-
+            
+        elif tag == 'STRUCT_DEF':
+            pass
+        
         elif tag == 'DECL':
             self.st.declare(node[2], node[1], in_func)
             self.emit("INC", "SP") # Reserve stack space
@@ -97,32 +152,68 @@ class CodeGenerator:
             for _ in range(size): self.emit("INC", "SP", section=section)
         
         elif tag == 'ASSIGN':
-            var_name = node[1]
-            val = self.visit(node[2], in_func) # This would usually return a register
-            var_info = self.st.lookup(var_name)
-            # Find address: base_ptr + offset
-            self.emit("LDINT", "R1", var_info['offset'], section=section)
-            self.emit("ADD", "R2", "BP", "R1", section=section) # R2 = address
-            self.emit("STOR", "R5", "R2", section=section) # Assuming R5 has the value
+            target = node[1]  # Puede ser un str ('n1') o una tupla ('MEMBER_ACCESS', ...)
+            val = self.visit(node[2], in_func)  # Evalúa la expresión; el resultado queda en R5
+            
+            # CASO A: Asignación a un miembro de un Struct (e.g., n1.id = 5)
+            if isinstance(target, tuple) and target[0] == 'MEMBER_ACCESS':
+                base = target[1]    # e.g., 'n1' o 'this'
+                member = target[2]  # e.g., 'id'
+                
+                # 1. Buscar la información de la variable base en la tabla de símbolos
+                var_info = self.st.lookup(base)
+                struct_type = var_info['type']
+                
+                # 2. Obtener el offset base de la variable en el Stack (BP + offset)
+                self.emit("LDINT", "R1", var_info['offset'], section=section)
+                self.emit("ADD", "R2", "BP", "R1", section=section)
+                
+                # 3. Cargar la dirección física real a la que apunta (puntero del Heap)
+                self.emit("LOADMEM", "R3", "R2", section=section) # R3 = dirección base en el Heap
+                
+                # 4. Calcular el offset interno del miembro dentro del struct
+                if struct_type not in self.st.structs:
+                    raise Exception(f"Error semántico: Tipo de estructura '{struct_type}' no reconocida.")
+                
+                member_offset = self.st.structs[struct_type]['members'][member]['offset']
+                
+                # 5. Dirección final en el Heap = Base de la estructura + offset del miembro
+                self.emit("LDINT", "R1", member_offset, section=section)
+                self.emit("ADD", "R2", "R3", "R1", section=section) # R2 = dirección de memoria física exacta
+                
+                # 6. Guardar el valor (que está en R5) en esa dirección física del Heap
+                self.emit("STOR", "R5", "R2", section=section)
+
+            # CASO B: Asignación normal a una variable local/global (e.g., x = 10)
+            else:
+                var_name = target
+                var_info = self.st.lookup(var_name)
+                
+                # Encontrar dirección en el Stack: base_ptr + offset
+                self.emit("LDINT", "R1", var_info['offset'], section=section)
+                self.emit("ADD", "R2", "BP", "R1", section=section) # R2 = dirección en Stack
+                self.emit("STOR", "R5", "R2", section=section)      # Guarda el valor de R5 en el Stack
 
         elif tag == 'IF':
             label_end = self.new_label("end_if")
-            self.visit(node[1], in_func) # Generate condition logic, sets Z flag
+            self.visit(node[1], in_func)
             self.emit("JMPZ", label_end, section=section)
-            self.visit(node[2], in_func) # Then block
-            (section if in_func else self.text).append("{" + label_end + "}")
+            self.visit(node[2], in_func)
+            # Agrega la etiqueta con punto limpia (ej: .end_if_1)
+            (section if in_func else self.text).append(f"{label_end}")
 
         elif tag == 'WHILE':
             label_start = self.new_label("while_start")
             label_end = self.new_label("while_end")
-            (section if in_func else self.text).append("{" + label_start + "}")
+            # Palabras solas
+            (section if in_func else self.text).append(f"{label_start}")
             print(node[1])
-            self.visit(node[1], in_func) # Condition
+            self.visit(node[1], in_func)
             self.emit("JMPZ", label_end, section=section)
-            self.visit(node[2], in_func) # Block
+            self.visit(node[2], in_func)
             self.emit("JMP", label_start, section=section)
-            (section if in_func else self.text).append("{" + label_end + "}")
-
+            (section if in_func else self.text).append(f"{label_end}")
+            
         elif tag == 'FOR':
             l_start, l_end = self.new_label("for_start"), self.new_label("for_end")
             self.st.enter_scope()
@@ -140,18 +231,17 @@ class CodeGenerator:
         elif tag == 'FUNC_DEF':
             section = self.functions
             in_func = True
-            # label name: {function_name}
-            self.functions.append("{" + node[2] + "}")
+            # Le ponemos el punto adelante: .main
+            self.functions.append(f".{node[2]}")
             self.st.enter_scope()
             self.emit("PUSH", "BP", section=section)
             self.emit("MOV", "BP", "SP", section=section)
             for type, name in node[3]:
                 self.st.declare(name, type)
-            # Logic to handle params from stack...
-            self.visit(node[4], in_func) # Block
+            self.visit(node[4], in_func)
             self.st.exit_scope()
             self.emit("POP", "BP", section=section)
-            self.emit("POP", "PC", section=section) # Simplified return
+            self.emit("POP", "PC", section=section)
             section = None
             in_func = False
 
@@ -207,7 +297,18 @@ class CodeGenerator:
             self.emit("POP", "R1", section=section)
             op = {'+':'ADD', '-':'SUB', '*':'MUL', '/':'DIV'}[tag]
             self.emit(op, "R5", "R1", "R5", section=section)
-
+        
+        elif tag == 'NEW_OBJECT':
+            struct_name = node[1]
+            if struct_name not in self.st.structs:
+                raise Exception(f"Error semántico: Estructura '{struct_name}' no definida.") 
+            size = self.st.structs[struct_name]['size']
+            self.emit("LDINT", "R1", size, section=section)
+            
+            # Cambiamos "SYS_ALLOC" por la palabra mágica que intercepta tu cpu.py
+            self.emit("0xEEEEEEEEEEEEEEEE", section=section) 
+            return "VALUE_IN_R5"
+        
         if tag == 'DECL_ASSIGN':
             offset = self.st.declare(node[2], node[1])
             self.visit(node[3], in_func) # Evaluate Expr into R5
@@ -235,6 +336,11 @@ class CodeGenerator:
             self.emit("ADD", "R2", "R3", "R1", section=section) # Final address = Base of struct + member offset
             self.emit("LOADMEM", "R5", "R2", section=section)   # Value into R5
             return ("ADDRESS_IN_R2", "VALUE_IN_R5")
+   
+    def new_label(self, prefix="L"):
+        self.label_idx += 1
+        # Agregamos un punto adelante para denotar etiqueta de salto
+        return f".{prefix}_{self.label_idx}"
 
 class Parser:
     def __init__(self):
@@ -400,6 +506,10 @@ class Parser:
                     | AritTerm DIV AritFactor
                     | AritFactor'''
         p[0] = (p[2], p[1], p[3]) if len(p) == 4 else p[1]
+
+    def p_arit_factor_new(self, p):
+        '''AritFactor : IDENTIFIER NEW'''
+        p[0] = ('NEW_OBJECT', p[1])
 
     def p_arit_factor(self, p):
         '''AritFactor : LPAREN Expr RPAREN
