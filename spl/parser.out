@@ -1,0 +1,3690 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    COLON
+    DIVEQ
+    MINUSEQ
+    MOD
+    PLUSEQ
+    STRING
+    TIMESEQ
+
+Grammar
+
+Rule 0     S' -> Programa
+Rule 1     Programa -> bloque_list
+Rule 2     bloque_list -> bloque_list Bloque
+Rule 3     bloque_list -> empty
+Rule 4     Bloque -> sentencia_list
+Rule 5     sentencia_list -> sentencia_list Sentencia
+Rule 6     sentencia_list -> empty
+Rule 7     Sentencia -> Declaracion SEMICOLON
+Rule 8     Sentencia -> Estructura
+Rule 9     Sentencia -> Funcion
+Rule 10    Sentencia -> Metodo
+Rule 11    Sentencia -> Asignacion SEMICOLON
+Rule 12    Sentencia -> LlamadoFun SEMICOLON
+Rule 13    Sentencia -> LlamadoMet SEMICOLON
+Rule 14    Sentencia -> While
+Rule 15    Sentencia -> For
+Rule 16    Sentencia -> If
+Rule 17    Sentencia -> RETURN Expr SEMICOLON
+Rule 18    If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE
+Rule 19    If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE
+Rule 20    While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE
+Rule 21    For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE
+Rule 22    ForInit -> Declaracion
+Rule 23    ForInit -> Asignacion
+Rule 24    ForUpdate -> Asignacion
+Rule 25    ForUpdate -> Incremento
+Rule 26    ForUpdate -> Decremento
+Rule 27    Incremento -> IDENTIFIER INC
+Rule 28    Decremento -> IDENTIFIER DEC
+Rule 29    BoolExpr -> BoolExpr OR BoolTerm
+Rule 30    BoolExpr -> BoolTerm
+Rule 31    BoolTerm -> BoolTerm AND BoolFactor
+Rule 32    BoolTerm -> BoolFactor
+Rule 33    BoolFactor -> NOT BoolFactor
+Rule 34    BoolFactor -> LPAREN BoolExpr RPAREN
+Rule 35    BoolFactor -> TRUE
+Rule 36    BoolFactor -> FALSE
+Rule 37    BoolFactor -> Relacion
+Rule 38    BoolFactor -> LlamadoFun
+Rule 39    BoolFactor -> LlamadoMet
+Rule 40    BoolFactor -> AccesoStruc
+Rule 41    LlamadoFun -> IDENTIFIER LPAREN exprs_opt RPAREN
+Rule 42    LlamadoMet -> AccesoStruc LPAREN exprs_opt RPAREN
+Rule 43    exprs_opt -> Exprs
+Rule 44    exprs_opt -> empty
+Rule 45    Exprs -> Expr
+Rule 46    Exprs -> Exprs COMMA Expr
+Rule 47    Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE
+Rule 48    decl_plus -> Declaracion SEMICOLON
+Rule 49    decl_plus -> decl_plus Declaracion SEMICOLON
+Rule 50    Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+Rule 51    Declaracion -> Tipo IDENTIFIER ASSIGN Expr
+Rule 52    Declaracion -> Tipo IDENTIFIER
+Rule 53    Declaracion -> Tipo IDENTIFIER LBRACKET INTEGER RBRACKET
+Rule 54    Asignacion -> IDENTIFIER ASSIGN Expr
+Rule 55    Asignacion -> AccesoStruc ASSIGN Expr
+Rule 56    Asignacion -> IDENTIFIER LBRACKET Expr RBRACKET ASSIGN Expr
+Rule 57    Expr -> AritExpr
+Rule 58    Expr -> BoolExpr
+Rule 59    AritExpr -> AritExpr PLUS AritTerm
+Rule 60    AritExpr -> AritExpr MINUS AritTerm
+Rule 61    AritExpr -> AritTerm
+Rule 62    AritTerm -> AritTerm TIMES AritFactor
+Rule 63    AritTerm -> AritTerm DIV AritFactor
+Rule 64    AritTerm -> AritFactor
+Rule 65    AritFactor -> IDENTIFIER NEW
+Rule 66    AritFactor -> LPAREN Expr RPAREN
+Rule 67    AritFactor -> INTEGER
+Rule 68    AritFactor -> FLOAT_NUMBER
+Rule 69    AritFactor -> IDENTIFIER
+Rule 70    AritFactor -> AccesoStruc
+Rule 71    AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET
+Rule 72    Relacion -> AritExpr RelOp AritExpr
+Rule 73    RelOp -> LT
+Rule 74    RelOp -> GT
+Rule 75    RelOp -> LE
+Rule 76    RelOp -> GE
+Rule 77    RelOp -> EQ
+Rule 78    RelOp -> NE
+Rule 79    AccesoStruc -> IDENTIFIER DOT IDENTIFIER
+Rule 80    AccesoStruc -> AccesoStruc DOT IDENTIFIER
+Rule 81    Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+Rule 82    parametros_opt -> Parametros
+Rule 83    parametros_opt -> empty
+Rule 84    Parametros -> Parametro
+Rule 85    Parametros -> Parametros COMMA Parametro
+Rule 86    Parametro -> Tipo IDENTIFIER
+Rule 87    Tipo -> INT
+Rule 88    Tipo -> FLOAT
+Rule 89    Tipo -> BOOL
+Rule 90    Tipo -> IDENTIFIER
+Rule 91    empty -> <empty>
+
+Terminals, with rules where they appear
+
+AND                  : 31
+ASSIGN               : 51 54 55 56
+BOOL                 : 89
+COLON                : 
+COMMA                : 46 85
+DEC                  : 28
+DIV                  : 63
+DIVEQ                : 
+DOT                  : 50 79 80
+ELSE                 : 18
+EQ                   : 77
+FALSE                : 36
+FLOAT                : 88
+FLOAT_NUMBER         : 68
+FOR                  : 21
+GE                   : 76
+GT                   : 74
+IDENTIFIER           : 27 28 41 47 50 50 51 52 53 54 56 65 69 71 79 79 80 81 86 90
+IF                   : 18 19
+INC                  : 27
+INT                  : 87
+INTEGER              : 53 67
+LBRACE               : 18 18 19 20 21 47 50 81
+LBRACKET             : 53 56 71
+LE                   : 75
+LPAREN               : 18 19 20 21 34 41 42 50 66 81
+LT                   : 73
+MINUS                : 60
+MINUSEQ              : 
+MOD                  : 
+NE                   : 78
+NEW                  : 65
+NOT                  : 33
+OR                   : 29
+PLUS                 : 59
+PLUSEQ               : 
+RBRACE               : 18 18 19 20 21 47 50 81
+RBRACKET             : 53 56 71
+RETURN               : 17
+RPAREN               : 18 19 20 21 34 41 42 50 66 81
+SEMICOLON            : 7 11 12 13 17 21 21 48 49
+STRING               : 
+STRUCT               : 47
+TIMES                : 62
+TIMESEQ              : 
+TRUE                 : 35
+WHILE                : 20
+error                : 
+
+Nonterminals, with rules where they appear
+
+AccesoStruc          : 40 42 55 70 80
+AritExpr             : 57 59 60 72 72
+AritFactor           : 62 63 64
+AritTerm             : 59 60 61 62 63
+Asignacion           : 11 23 24
+Bloque               : 2 18 18 19 20 21 50 81
+BoolExpr             : 20 29 34 58
+BoolFactor           : 31 32 33
+BoolTerm             : 29 30 31
+Declaracion          : 7 22 48 49
+Decremento           : 26
+Estructura           : 8
+Expr                 : 17 18 19 21 45 46 51 54 55 56 56 66 71
+Exprs                : 43 46
+For                  : 15
+ForInit              : 21
+ForUpdate            : 21
+Funcion              : 9
+If                   : 16
+Incremento           : 25
+LlamadoFun           : 12 38
+LlamadoMet           : 13 39
+Metodo               : 10
+Parametro            : 84 85
+Parametros           : 82 85
+Programa             : 0
+RelOp                : 72
+Relacion             : 37
+Sentencia            : 5
+Tipo                 : 50 51 52 53 81 86
+While                : 14
+bloque_list          : 1 2
+decl_plus            : 47 49
+empty                : 3 6 44 83
+exprs_opt            : 41 42
+parametros_opt       : 50 81
+sentencia_list       : 4 5
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . Programa
+    (1) Programa -> . bloque_list
+    (2) bloque_list -> . bloque_list Bloque
+    (3) bloque_list -> . empty
+    (91) empty -> .
+
+    RETURN          reduce using rule 91 (empty -> .)
+    STRUCT          reduce using rule 91 (empty -> .)
+    IDENTIFIER      reduce using rule 91 (empty -> .)
+    WHILE           reduce using rule 91 (empty -> .)
+    FOR             reduce using rule 91 (empty -> .)
+    IF              reduce using rule 91 (empty -> .)
+    INT             reduce using rule 91 (empty -> .)
+    FLOAT           reduce using rule 91 (empty -> .)
+    BOOL            reduce using rule 91 (empty -> .)
+    $end            reduce using rule 91 (empty -> .)
+
+    Programa                       shift and go to state 1
+    bloque_list                    shift and go to state 2
+    empty                          shift and go to state 3
+
+state 1
+
+    (0) S' -> Programa .
+
+
+
+state 2
+
+    (1) Programa -> bloque_list .
+    (2) bloque_list -> bloque_list . Bloque
+    (4) Bloque -> . sentencia_list
+    (5) sentencia_list -> . sentencia_list Sentencia
+    (6) sentencia_list -> . empty
+    (91) empty -> .
+
+  ! reduce/reduce conflict for $end resolved using rule 1 (Programa -> bloque_list .)
+    $end            reduce using rule 1 (Programa -> bloque_list .)
+    RETURN          reduce using rule 91 (empty -> .)
+    STRUCT          reduce using rule 91 (empty -> .)
+    IDENTIFIER      reduce using rule 91 (empty -> .)
+    WHILE           reduce using rule 91 (empty -> .)
+    FOR             reduce using rule 91 (empty -> .)
+    IF              reduce using rule 91 (empty -> .)
+    INT             reduce using rule 91 (empty -> .)
+    FLOAT           reduce using rule 91 (empty -> .)
+    BOOL            reduce using rule 91 (empty -> .)
+
+  ! $end            [ reduce using rule 91 (empty -> .) ]
+
+    Bloque                         shift and go to state 4
+    sentencia_list                 shift and go to state 5
+    empty                          shift and go to state 6
+
+state 3
+
+    (3) bloque_list -> empty .
+
+    RETURN          reduce using rule 3 (bloque_list -> empty .)
+    STRUCT          reduce using rule 3 (bloque_list -> empty .)
+    IDENTIFIER      reduce using rule 3 (bloque_list -> empty .)
+    WHILE           reduce using rule 3 (bloque_list -> empty .)
+    FOR             reduce using rule 3 (bloque_list -> empty .)
+    IF              reduce using rule 3 (bloque_list -> empty .)
+    INT             reduce using rule 3 (bloque_list -> empty .)
+    FLOAT           reduce using rule 3 (bloque_list -> empty .)
+    BOOL            reduce using rule 3 (bloque_list -> empty .)
+    $end            reduce using rule 3 (bloque_list -> empty .)
+
+
+state 4
+
+    (2) bloque_list -> bloque_list Bloque .
+
+    RETURN          reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    STRUCT          reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    IDENTIFIER      reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    WHILE           reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    FOR             reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    IF              reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    INT             reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    FLOAT           reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    BOOL            reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+    $end            reduce using rule 2 (bloque_list -> bloque_list Bloque .)
+
+
+state 5
+
+    (4) Bloque -> sentencia_list .
+    (5) sentencia_list -> sentencia_list . Sentencia
+    (7) Sentencia -> . Declaracion SEMICOLON
+    (8) Sentencia -> . Estructura
+    (9) Sentencia -> . Funcion
+    (10) Sentencia -> . Metodo
+    (11) Sentencia -> . Asignacion SEMICOLON
+    (12) Sentencia -> . LlamadoFun SEMICOLON
+    (13) Sentencia -> . LlamadoMet SEMICOLON
+    (14) Sentencia -> . While
+    (15) Sentencia -> . For
+    (16) Sentencia -> . If
+    (17) Sentencia -> . RETURN Expr SEMICOLON
+    (51) Declaracion -> . Tipo IDENTIFIER ASSIGN Expr
+    (52) Declaracion -> . Tipo IDENTIFIER
+    (53) Declaracion -> . Tipo IDENTIFIER LBRACKET INTEGER RBRACKET
+    (47) Estructura -> . STRUCT IDENTIFIER LBRACE decl_plus RBRACE
+    (81) Funcion -> . Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+    (50) Metodo -> . Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+    (54) Asignacion -> . IDENTIFIER ASSIGN Expr
+    (55) Asignacion -> . AccesoStruc ASSIGN Expr
+    (56) Asignacion -> . IDENTIFIER LBRACKET Expr RBRACKET ASSIGN Expr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+    (20) While -> . WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE
+    (21) For -> . FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE
+    (18) If -> . IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE
+    (19) If -> . IF LPAREN Expr RPAREN LBRACE Bloque RBRACE
+    (87) Tipo -> . INT
+    (88) Tipo -> . FLOAT
+    (89) Tipo -> . BOOL
+    (90) Tipo -> . IDENTIFIER
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+  ! shift/reduce conflict for RETURN resolved as shift
+  ! shift/reduce conflict for STRUCT resolved as shift
+  ! shift/reduce conflict for IDENTIFIER resolved as shift
+  ! shift/reduce conflict for WHILE resolved as shift
+  ! shift/reduce conflict for FOR resolved as shift
+  ! shift/reduce conflict for IF resolved as shift
+  ! shift/reduce conflict for INT resolved as shift
+  ! shift/reduce conflict for FLOAT resolved as shift
+  ! shift/reduce conflict for BOOL resolved as shift
+    $end            reduce using rule 4 (Bloque -> sentencia_list .)
+    RBRACE          reduce using rule 4 (Bloque -> sentencia_list .)
+    RETURN          shift and go to state 18
+    STRUCT          shift and go to state 21
+    IDENTIFIER      shift and go to state 20
+    WHILE           shift and go to state 23
+    FOR             shift and go to state 24
+    IF              shift and go to state 25
+    INT             shift and go to state 26
+    FLOAT           shift and go to state 27
+    BOOL            shift and go to state 28
+
+  ! RETURN          [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+  ! STRUCT          [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+  ! IDENTIFIER      [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+  ! WHILE           [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+  ! FOR             [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+  ! IF              [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+  ! INT             [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+  ! FLOAT           [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+  ! BOOL            [ reduce using rule 4 (Bloque -> sentencia_list .) ]
+
+    Sentencia                      shift and go to state 7
+    Declaracion                    shift and go to state 8
+    Estructura                     shift and go to state 9
+    Funcion                        shift and go to state 10
+    Metodo                         shift and go to state 11
+    Asignacion                     shift and go to state 12
+    LlamadoFun                     shift and go to state 13
+    LlamadoMet                     shift and go to state 14
+    While                          shift and go to state 15
+    For                            shift and go to state 16
+    If                             shift and go to state 17
+    Tipo                           shift and go to state 19
+    AccesoStruc                    shift and go to state 22
+
+state 6
+
+    (6) sentencia_list -> empty .
+
+    RETURN          reduce using rule 6 (sentencia_list -> empty .)
+    STRUCT          reduce using rule 6 (sentencia_list -> empty .)
+    IDENTIFIER      reduce using rule 6 (sentencia_list -> empty .)
+    WHILE           reduce using rule 6 (sentencia_list -> empty .)
+    FOR             reduce using rule 6 (sentencia_list -> empty .)
+    IF              reduce using rule 6 (sentencia_list -> empty .)
+    INT             reduce using rule 6 (sentencia_list -> empty .)
+    FLOAT           reduce using rule 6 (sentencia_list -> empty .)
+    BOOL            reduce using rule 6 (sentencia_list -> empty .)
+    $end            reduce using rule 6 (sentencia_list -> empty .)
+    RBRACE          reduce using rule 6 (sentencia_list -> empty .)
+
+
+state 7
+
+    (5) sentencia_list -> sentencia_list Sentencia .
+
+    RETURN          reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    STRUCT          reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    IDENTIFIER      reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    WHILE           reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    FOR             reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    IF              reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    INT             reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    FLOAT           reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    BOOL            reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    $end            reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+    RBRACE          reduce using rule 5 (sentencia_list -> sentencia_list Sentencia .)
+
+
+state 8
+
+    (7) Sentencia -> Declaracion . SEMICOLON
+
+    SEMICOLON       shift and go to state 29
+
+
+state 9
+
+    (8) Sentencia -> Estructura .
+
+    RETURN          reduce using rule 8 (Sentencia -> Estructura .)
+    STRUCT          reduce using rule 8 (Sentencia -> Estructura .)
+    IDENTIFIER      reduce using rule 8 (Sentencia -> Estructura .)
+    WHILE           reduce using rule 8 (Sentencia -> Estructura .)
+    FOR             reduce using rule 8 (Sentencia -> Estructura .)
+    IF              reduce using rule 8 (Sentencia -> Estructura .)
+    INT             reduce using rule 8 (Sentencia -> Estructura .)
+    FLOAT           reduce using rule 8 (Sentencia -> Estructura .)
+    BOOL            reduce using rule 8 (Sentencia -> Estructura .)
+    $end            reduce using rule 8 (Sentencia -> Estructura .)
+    RBRACE          reduce using rule 8 (Sentencia -> Estructura .)
+
+
+state 10
+
+    (9) Sentencia -> Funcion .
+
+    RETURN          reduce using rule 9 (Sentencia -> Funcion .)
+    STRUCT          reduce using rule 9 (Sentencia -> Funcion .)
+    IDENTIFIER      reduce using rule 9 (Sentencia -> Funcion .)
+    WHILE           reduce using rule 9 (Sentencia -> Funcion .)
+    FOR             reduce using rule 9 (Sentencia -> Funcion .)
+    IF              reduce using rule 9 (Sentencia -> Funcion .)
+    INT             reduce using rule 9 (Sentencia -> Funcion .)
+    FLOAT           reduce using rule 9 (Sentencia -> Funcion .)
+    BOOL            reduce using rule 9 (Sentencia -> Funcion .)
+    $end            reduce using rule 9 (Sentencia -> Funcion .)
+    RBRACE          reduce using rule 9 (Sentencia -> Funcion .)
+
+
+state 11
+
+    (10) Sentencia -> Metodo .
+
+    RETURN          reduce using rule 10 (Sentencia -> Metodo .)
+    STRUCT          reduce using rule 10 (Sentencia -> Metodo .)
+    IDENTIFIER      reduce using rule 10 (Sentencia -> Metodo .)
+    WHILE           reduce using rule 10 (Sentencia -> Metodo .)
+    FOR             reduce using rule 10 (Sentencia -> Metodo .)
+    IF              reduce using rule 10 (Sentencia -> Metodo .)
+    INT             reduce using rule 10 (Sentencia -> Metodo .)
+    FLOAT           reduce using rule 10 (Sentencia -> Metodo .)
+    BOOL            reduce using rule 10 (Sentencia -> Metodo .)
+    $end            reduce using rule 10 (Sentencia -> Metodo .)
+    RBRACE          reduce using rule 10 (Sentencia -> Metodo .)
+
+
+state 12
+
+    (11) Sentencia -> Asignacion . SEMICOLON
+
+    SEMICOLON       shift and go to state 30
+
+
+state 13
+
+    (12) Sentencia -> LlamadoFun . SEMICOLON
+
+    SEMICOLON       shift and go to state 31
+
+
+state 14
+
+    (13) Sentencia -> LlamadoMet . SEMICOLON
+
+    SEMICOLON       shift and go to state 32
+
+
+state 15
+
+    (14) Sentencia -> While .
+
+    RETURN          reduce using rule 14 (Sentencia -> While .)
+    STRUCT          reduce using rule 14 (Sentencia -> While .)
+    IDENTIFIER      reduce using rule 14 (Sentencia -> While .)
+    WHILE           reduce using rule 14 (Sentencia -> While .)
+    FOR             reduce using rule 14 (Sentencia -> While .)
+    IF              reduce using rule 14 (Sentencia -> While .)
+    INT             reduce using rule 14 (Sentencia -> While .)
+    FLOAT           reduce using rule 14 (Sentencia -> While .)
+    BOOL            reduce using rule 14 (Sentencia -> While .)
+    $end            reduce using rule 14 (Sentencia -> While .)
+    RBRACE          reduce using rule 14 (Sentencia -> While .)
+
+
+state 16
+
+    (15) Sentencia -> For .
+
+    RETURN          reduce using rule 15 (Sentencia -> For .)
+    STRUCT          reduce using rule 15 (Sentencia -> For .)
+    IDENTIFIER      reduce using rule 15 (Sentencia -> For .)
+    WHILE           reduce using rule 15 (Sentencia -> For .)
+    FOR             reduce using rule 15 (Sentencia -> For .)
+    IF              reduce using rule 15 (Sentencia -> For .)
+    INT             reduce using rule 15 (Sentencia -> For .)
+    FLOAT           reduce using rule 15 (Sentencia -> For .)
+    BOOL            reduce using rule 15 (Sentencia -> For .)
+    $end            reduce using rule 15 (Sentencia -> For .)
+    RBRACE          reduce using rule 15 (Sentencia -> For .)
+
+
+state 17
+
+    (16) Sentencia -> If .
+
+    RETURN          reduce using rule 16 (Sentencia -> If .)
+    STRUCT          reduce using rule 16 (Sentencia -> If .)
+    IDENTIFIER      reduce using rule 16 (Sentencia -> If .)
+    WHILE           reduce using rule 16 (Sentencia -> If .)
+    FOR             reduce using rule 16 (Sentencia -> If .)
+    IF              reduce using rule 16 (Sentencia -> If .)
+    INT             reduce using rule 16 (Sentencia -> If .)
+    FLOAT           reduce using rule 16 (Sentencia -> If .)
+    BOOL            reduce using rule 16 (Sentencia -> If .)
+    $end            reduce using rule 16 (Sentencia -> If .)
+    RBRACE          reduce using rule 16 (Sentencia -> If .)
+
+
+state 18
+
+    (17) Sentencia -> RETURN . Expr SEMICOLON
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 33
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 19
+
+    (51) Declaracion -> Tipo . IDENTIFIER ASSIGN Expr
+    (52) Declaracion -> Tipo . IDENTIFIER
+    (53) Declaracion -> Tipo . IDENTIFIER LBRACKET INTEGER RBRACKET
+    (81) Funcion -> Tipo . IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+    (50) Metodo -> Tipo . IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+
+    IDENTIFIER      shift and go to state 51
+
+
+state 20
+
+    (54) Asignacion -> IDENTIFIER . ASSIGN Expr
+    (56) Asignacion -> IDENTIFIER . LBRACKET Expr RBRACKET ASSIGN Expr
+    (41) LlamadoFun -> IDENTIFIER . LPAREN exprs_opt RPAREN
+    (90) Tipo -> IDENTIFIER .
+    (79) AccesoStruc -> IDENTIFIER . DOT IDENTIFIER
+
+    ASSIGN          shift and go to state 52
+    LBRACKET        shift and go to state 53
+    LPAREN          shift and go to state 54
+    IDENTIFIER      reduce using rule 90 (Tipo -> IDENTIFIER .)
+    DOT             shift and go to state 55
+
+
+state 21
+
+    (47) Estructura -> STRUCT . IDENTIFIER LBRACE decl_plus RBRACE
+
+    IDENTIFIER      shift and go to state 56
+
+
+state 22
+
+    (55) Asignacion -> AccesoStruc . ASSIGN Expr
+    (42) LlamadoMet -> AccesoStruc . LPAREN exprs_opt RPAREN
+    (80) AccesoStruc -> AccesoStruc . DOT IDENTIFIER
+
+    ASSIGN          shift and go to state 57
+    LPAREN          shift and go to state 58
+    DOT             shift and go to state 59
+
+
+state 23
+
+    (20) While -> WHILE . LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE
+
+    LPAREN          shift and go to state 60
+
+
+state 24
+
+    (21) For -> FOR . LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE
+
+    LPAREN          shift and go to state 61
+
+
+state 25
+
+    (18) If -> IF . LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE
+    (19) If -> IF . LPAREN Expr RPAREN LBRACE Bloque RBRACE
+
+    LPAREN          shift and go to state 62
+
+
+state 26
+
+    (87) Tipo -> INT .
+
+    IDENTIFIER      reduce using rule 87 (Tipo -> INT .)
+
+
+state 27
+
+    (88) Tipo -> FLOAT .
+
+    IDENTIFIER      reduce using rule 88 (Tipo -> FLOAT .)
+
+
+state 28
+
+    (89) Tipo -> BOOL .
+
+    IDENTIFIER      reduce using rule 89 (Tipo -> BOOL .)
+
+
+state 29
+
+    (7) Sentencia -> Declaracion SEMICOLON .
+
+    RETURN          reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    STRUCT          reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    IDENTIFIER      reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    WHILE           reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    FOR             reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    IF              reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    INT             reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    FLOAT           reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    BOOL            reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    $end            reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+    RBRACE          reduce using rule 7 (Sentencia -> Declaracion SEMICOLON .)
+
+
+state 30
+
+    (11) Sentencia -> Asignacion SEMICOLON .
+
+    RETURN          reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    STRUCT          reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    IDENTIFIER      reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    WHILE           reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    FOR             reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    IF              reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    INT             reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    FLOAT           reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    BOOL            reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    $end            reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+    RBRACE          reduce using rule 11 (Sentencia -> Asignacion SEMICOLON .)
+
+
+state 31
+
+    (12) Sentencia -> LlamadoFun SEMICOLON .
+
+    RETURN          reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    STRUCT          reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    IDENTIFIER      reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    WHILE           reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    FOR             reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    IF              reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    INT             reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    FLOAT           reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    BOOL            reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    $end            reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+    RBRACE          reduce using rule 12 (Sentencia -> LlamadoFun SEMICOLON .)
+
+
+state 32
+
+    (13) Sentencia -> LlamadoMet SEMICOLON .
+
+    RETURN          reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    STRUCT          reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    IDENTIFIER      reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    WHILE           reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    FOR             reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    IF              reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    INT             reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    FLOAT           reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    BOOL            reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    $end            reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+    RBRACE          reduce using rule 13 (Sentencia -> LlamadoMet SEMICOLON .)
+
+
+state 33
+
+    (17) Sentencia -> RETURN Expr . SEMICOLON
+
+    SEMICOLON       shift and go to state 63
+
+
+state 34
+
+    (57) Expr -> AritExpr .
+    (59) AritExpr -> AritExpr . PLUS AritTerm
+    (60) AritExpr -> AritExpr . MINUS AritTerm
+    (72) Relacion -> AritExpr . RelOp AritExpr
+    (73) RelOp -> . LT
+    (74) RelOp -> . GT
+    (75) RelOp -> . LE
+    (76) RelOp -> . GE
+    (77) RelOp -> . EQ
+    (78) RelOp -> . NE
+
+    SEMICOLON       reduce using rule 57 (Expr -> AritExpr .)
+    RPAREN          reduce using rule 57 (Expr -> AritExpr .)
+    RBRACKET        reduce using rule 57 (Expr -> AritExpr .)
+    COMMA           reduce using rule 57 (Expr -> AritExpr .)
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    LT              shift and go to state 67
+    GT              shift and go to state 68
+    LE              shift and go to state 69
+    GE              shift and go to state 70
+    EQ              shift and go to state 71
+    NE              shift and go to state 72
+
+    RelOp                          shift and go to state 66
+
+state 35
+
+    (58) Expr -> BoolExpr .
+    (29) BoolExpr -> BoolExpr . OR BoolTerm
+
+    SEMICOLON       reduce using rule 58 (Expr -> BoolExpr .)
+    RPAREN          reduce using rule 58 (Expr -> BoolExpr .)
+    RBRACKET        reduce using rule 58 (Expr -> BoolExpr .)
+    COMMA           reduce using rule 58 (Expr -> BoolExpr .)
+    OR              shift and go to state 73
+
+
+state 36
+
+    (61) AritExpr -> AritTerm .
+    (62) AritTerm -> AritTerm . TIMES AritFactor
+    (63) AritTerm -> AritTerm . DIV AritFactor
+
+    PLUS            reduce using rule 61 (AritExpr -> AritTerm .)
+    MINUS           reduce using rule 61 (AritExpr -> AritTerm .)
+    LT              reduce using rule 61 (AritExpr -> AritTerm .)
+    GT              reduce using rule 61 (AritExpr -> AritTerm .)
+    LE              reduce using rule 61 (AritExpr -> AritTerm .)
+    GE              reduce using rule 61 (AritExpr -> AritTerm .)
+    EQ              reduce using rule 61 (AritExpr -> AritTerm .)
+    NE              reduce using rule 61 (AritExpr -> AritTerm .)
+    SEMICOLON       reduce using rule 61 (AritExpr -> AritTerm .)
+    RPAREN          reduce using rule 61 (AritExpr -> AritTerm .)
+    RBRACKET        reduce using rule 61 (AritExpr -> AritTerm .)
+    COMMA           reduce using rule 61 (AritExpr -> AritTerm .)
+    AND             reduce using rule 61 (AritExpr -> AritTerm .)
+    OR              reduce using rule 61 (AritExpr -> AritTerm .)
+    TIMES           shift and go to state 74
+    DIV             shift and go to state 75
+
+
+state 37
+
+    (30) BoolExpr -> BoolTerm .
+    (31) BoolTerm -> BoolTerm . AND BoolFactor
+
+    OR              reduce using rule 30 (BoolExpr -> BoolTerm .)
+    SEMICOLON       reduce using rule 30 (BoolExpr -> BoolTerm .)
+    RPAREN          reduce using rule 30 (BoolExpr -> BoolTerm .)
+    RBRACKET        reduce using rule 30 (BoolExpr -> BoolTerm .)
+    COMMA           reduce using rule 30 (BoolExpr -> BoolTerm .)
+    AND             shift and go to state 76
+
+
+state 38
+
+    (64) AritTerm -> AritFactor .
+
+    TIMES           reduce using rule 64 (AritTerm -> AritFactor .)
+    DIV             reduce using rule 64 (AritTerm -> AritFactor .)
+    PLUS            reduce using rule 64 (AritTerm -> AritFactor .)
+    MINUS           reduce using rule 64 (AritTerm -> AritFactor .)
+    LT              reduce using rule 64 (AritTerm -> AritFactor .)
+    GT              reduce using rule 64 (AritTerm -> AritFactor .)
+    LE              reduce using rule 64 (AritTerm -> AritFactor .)
+    GE              reduce using rule 64 (AritTerm -> AritFactor .)
+    EQ              reduce using rule 64 (AritTerm -> AritFactor .)
+    NE              reduce using rule 64 (AritTerm -> AritFactor .)
+    SEMICOLON       reduce using rule 64 (AritTerm -> AritFactor .)
+    RPAREN          reduce using rule 64 (AritTerm -> AritFactor .)
+    RBRACKET        reduce using rule 64 (AritTerm -> AritFactor .)
+    COMMA           reduce using rule 64 (AritTerm -> AritFactor .)
+    AND             reduce using rule 64 (AritTerm -> AritFactor .)
+    OR              reduce using rule 64 (AritTerm -> AritFactor .)
+
+
+state 39
+
+    (32) BoolTerm -> BoolFactor .
+
+    AND             reduce using rule 32 (BoolTerm -> BoolFactor .)
+    OR              reduce using rule 32 (BoolTerm -> BoolFactor .)
+    SEMICOLON       reduce using rule 32 (BoolTerm -> BoolFactor .)
+    RPAREN          reduce using rule 32 (BoolTerm -> BoolFactor .)
+    RBRACKET        reduce using rule 32 (BoolTerm -> BoolFactor .)
+    COMMA           reduce using rule 32 (BoolTerm -> BoolFactor .)
+
+
+state 40
+
+    (65) AritFactor -> IDENTIFIER . NEW
+    (69) AritFactor -> IDENTIFIER .
+    (71) AritFactor -> IDENTIFIER . LBRACKET Expr RBRACKET
+    (79) AccesoStruc -> IDENTIFIER . DOT IDENTIFIER
+    (41) LlamadoFun -> IDENTIFIER . LPAREN exprs_opt RPAREN
+
+    NEW             shift and go to state 77
+    TIMES           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    DIV             reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    PLUS            reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    MINUS           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LT              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    GT              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    GE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    EQ              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    NE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    SEMICOLON       reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    RPAREN          reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    RBRACKET        reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    COMMA           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LBRACKET        shift and go to state 78
+    DOT             shift and go to state 55
+    LPAREN          shift and go to state 54
+
+
+state 41
+
+    (66) AritFactor -> LPAREN . Expr RPAREN
+    (34) BoolFactor -> LPAREN . BoolExpr RPAREN
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+    NOT             shift and go to state 45
+    LPAREN          shift and go to state 79
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+    IDENTIFIER      shift and go to state 83
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    Expr                           shift and go to state 80
+    BoolExpr                       shift and go to state 81
+    AritExpr                       shift and go to state 34
+    BoolTerm                       shift and go to state 37
+    AritTerm                       shift and go to state 36
+    BoolFactor                     shift and go to state 39
+    AritFactor                     shift and go to state 38
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+    AccesoStruc                    shift and go to state 82
+
+state 42
+
+    (67) AritFactor -> INTEGER .
+
+    TIMES           reduce using rule 67 (AritFactor -> INTEGER .)
+    DIV             reduce using rule 67 (AritFactor -> INTEGER .)
+    PLUS            reduce using rule 67 (AritFactor -> INTEGER .)
+    MINUS           reduce using rule 67 (AritFactor -> INTEGER .)
+    LT              reduce using rule 67 (AritFactor -> INTEGER .)
+    GT              reduce using rule 67 (AritFactor -> INTEGER .)
+    LE              reduce using rule 67 (AritFactor -> INTEGER .)
+    GE              reduce using rule 67 (AritFactor -> INTEGER .)
+    EQ              reduce using rule 67 (AritFactor -> INTEGER .)
+    NE              reduce using rule 67 (AritFactor -> INTEGER .)
+    SEMICOLON       reduce using rule 67 (AritFactor -> INTEGER .)
+    RPAREN          reduce using rule 67 (AritFactor -> INTEGER .)
+    RBRACKET        reduce using rule 67 (AritFactor -> INTEGER .)
+    COMMA           reduce using rule 67 (AritFactor -> INTEGER .)
+    AND             reduce using rule 67 (AritFactor -> INTEGER .)
+    OR              reduce using rule 67 (AritFactor -> INTEGER .)
+
+
+state 43
+
+    (68) AritFactor -> FLOAT_NUMBER .
+
+    TIMES           reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    DIV             reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    PLUS            reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    MINUS           reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    LT              reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    GT              reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    LE              reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    GE              reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    EQ              reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    NE              reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    SEMICOLON       reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    RPAREN          reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    RBRACKET        reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    COMMA           reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    AND             reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+    OR              reduce using rule 68 (AritFactor -> FLOAT_NUMBER .)
+
+
+state 44
+
+    (70) AritFactor -> AccesoStruc .
+    (40) BoolFactor -> AccesoStruc .
+    (80) AccesoStruc -> AccesoStruc . DOT IDENTIFIER
+    (42) LlamadoMet -> AccesoStruc . LPAREN exprs_opt RPAREN
+
+  ! reduce/reduce conflict for SEMICOLON resolved using rule 40 (BoolFactor -> AccesoStruc .)
+  ! reduce/reduce conflict for RPAREN resolved using rule 40 (BoolFactor -> AccesoStruc .)
+  ! reduce/reduce conflict for RBRACKET resolved using rule 40 (BoolFactor -> AccesoStruc .)
+  ! reduce/reduce conflict for COMMA resolved using rule 40 (BoolFactor -> AccesoStruc .)
+    TIMES           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    DIV             reduce using rule 70 (AritFactor -> AccesoStruc .)
+    PLUS            reduce using rule 70 (AritFactor -> AccesoStruc .)
+    MINUS           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LT              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    GT              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    GE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    EQ              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    NE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    AND             reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    OR              reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    SEMICOLON       reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    RPAREN          reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    RBRACKET        reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    COMMA           reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    DOT             shift and go to state 59
+    LPAREN          shift and go to state 58
+
+  ! SEMICOLON       [ reduce using rule 70 (AritFactor -> AccesoStruc .) ]
+  ! RPAREN          [ reduce using rule 70 (AritFactor -> AccesoStruc .) ]
+  ! RBRACKET        [ reduce using rule 70 (AritFactor -> AccesoStruc .) ]
+  ! COMMA           [ reduce using rule 70 (AritFactor -> AccesoStruc .) ]
+
+
+state 45
+
+    (33) BoolFactor -> NOT . BoolFactor
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+
+    NOT             shift and go to state 45
+    LPAREN          shift and go to state 79
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+    IDENTIFIER      shift and go to state 87
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    BoolFactor                     shift and go to state 84
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+    AccesoStruc                    shift and go to state 85
+    AritExpr                       shift and go to state 86
+    AritTerm                       shift and go to state 36
+    AritFactor                     shift and go to state 38
+
+state 46
+
+    (35) BoolFactor -> TRUE .
+
+    AND             reduce using rule 35 (BoolFactor -> TRUE .)
+    OR              reduce using rule 35 (BoolFactor -> TRUE .)
+    SEMICOLON       reduce using rule 35 (BoolFactor -> TRUE .)
+    RPAREN          reduce using rule 35 (BoolFactor -> TRUE .)
+    RBRACKET        reduce using rule 35 (BoolFactor -> TRUE .)
+    COMMA           reduce using rule 35 (BoolFactor -> TRUE .)
+
+
+state 47
+
+    (36) BoolFactor -> FALSE .
+
+    AND             reduce using rule 36 (BoolFactor -> FALSE .)
+    OR              reduce using rule 36 (BoolFactor -> FALSE .)
+    SEMICOLON       reduce using rule 36 (BoolFactor -> FALSE .)
+    RPAREN          reduce using rule 36 (BoolFactor -> FALSE .)
+    RBRACKET        reduce using rule 36 (BoolFactor -> FALSE .)
+    COMMA           reduce using rule 36 (BoolFactor -> FALSE .)
+
+
+state 48
+
+    (37) BoolFactor -> Relacion .
+
+    AND             reduce using rule 37 (BoolFactor -> Relacion .)
+    OR              reduce using rule 37 (BoolFactor -> Relacion .)
+    SEMICOLON       reduce using rule 37 (BoolFactor -> Relacion .)
+    RPAREN          reduce using rule 37 (BoolFactor -> Relacion .)
+    RBRACKET        reduce using rule 37 (BoolFactor -> Relacion .)
+    COMMA           reduce using rule 37 (BoolFactor -> Relacion .)
+
+
+state 49
+
+    (38) BoolFactor -> LlamadoFun .
+
+    AND             reduce using rule 38 (BoolFactor -> LlamadoFun .)
+    OR              reduce using rule 38 (BoolFactor -> LlamadoFun .)
+    SEMICOLON       reduce using rule 38 (BoolFactor -> LlamadoFun .)
+    RPAREN          reduce using rule 38 (BoolFactor -> LlamadoFun .)
+    RBRACKET        reduce using rule 38 (BoolFactor -> LlamadoFun .)
+    COMMA           reduce using rule 38 (BoolFactor -> LlamadoFun .)
+
+
+state 50
+
+    (39) BoolFactor -> LlamadoMet .
+
+    AND             reduce using rule 39 (BoolFactor -> LlamadoMet .)
+    OR              reduce using rule 39 (BoolFactor -> LlamadoMet .)
+    SEMICOLON       reduce using rule 39 (BoolFactor -> LlamadoMet .)
+    RPAREN          reduce using rule 39 (BoolFactor -> LlamadoMet .)
+    RBRACKET        reduce using rule 39 (BoolFactor -> LlamadoMet .)
+    COMMA           reduce using rule 39 (BoolFactor -> LlamadoMet .)
+
+
+state 51
+
+    (51) Declaracion -> Tipo IDENTIFIER . ASSIGN Expr
+    (52) Declaracion -> Tipo IDENTIFIER .
+    (53) Declaracion -> Tipo IDENTIFIER . LBRACKET INTEGER RBRACKET
+    (81) Funcion -> Tipo IDENTIFIER . LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+    (50) Metodo -> Tipo IDENTIFIER . DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+
+    ASSIGN          shift and go to state 88
+    SEMICOLON       reduce using rule 52 (Declaracion -> Tipo IDENTIFIER .)
+    LBRACKET        shift and go to state 89
+    LPAREN          shift and go to state 90
+    DOT             shift and go to state 91
+
+
+state 52
+
+    (54) Asignacion -> IDENTIFIER ASSIGN . Expr
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 92
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 53
+
+    (56) Asignacion -> IDENTIFIER LBRACKET . Expr RBRACKET ASSIGN Expr
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 93
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 54
+
+    (41) LlamadoFun -> IDENTIFIER LPAREN . exprs_opt RPAREN
+    (43) exprs_opt -> . Exprs
+    (44) exprs_opt -> . empty
+    (45) Exprs -> . Expr
+    (46) Exprs -> . Exprs COMMA Expr
+    (91) empty -> .
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    RPAREN          reduce using rule 91 (empty -> .)
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    exprs_opt                      shift and go to state 94
+    Exprs                          shift and go to state 95
+    empty                          shift and go to state 96
+    Expr                           shift and go to state 97
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 55
+
+    (79) AccesoStruc -> IDENTIFIER DOT . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 98
+
+
+state 56
+
+    (47) Estructura -> STRUCT IDENTIFIER . LBRACE decl_plus RBRACE
+
+    LBRACE          shift and go to state 99
+
+
+state 57
+
+    (55) Asignacion -> AccesoStruc ASSIGN . Expr
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    AccesoStruc                    shift and go to state 44
+    Expr                           shift and go to state 100
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 58
+
+    (42) LlamadoMet -> AccesoStruc LPAREN . exprs_opt RPAREN
+    (43) exprs_opt -> . Exprs
+    (44) exprs_opt -> . empty
+    (45) Exprs -> . Expr
+    (46) Exprs -> . Exprs COMMA Expr
+    (91) empty -> .
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    RPAREN          reduce using rule 91 (empty -> .)
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    AccesoStruc                    shift and go to state 44
+    exprs_opt                      shift and go to state 101
+    Exprs                          shift and go to state 95
+    empty                          shift and go to state 96
+    Expr                           shift and go to state 97
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 59
+
+    (80) AccesoStruc -> AccesoStruc DOT . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 102
+
+
+state 60
+
+    (20) While -> WHILE LPAREN . BoolExpr RPAREN LBRACE Bloque RBRACE
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+
+    NOT             shift and go to state 45
+    LPAREN          shift and go to state 79
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+    IDENTIFIER      shift and go to state 87
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    BoolExpr                       shift and go to state 103
+    BoolTerm                       shift and go to state 37
+    BoolFactor                     shift and go to state 39
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+    AccesoStruc                    shift and go to state 85
+    AritExpr                       shift and go to state 86
+    AritTerm                       shift and go to state 36
+    AritFactor                     shift and go to state 38
+
+state 61
+
+    (21) For -> FOR LPAREN . ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE
+    (22) ForInit -> . Declaracion
+    (23) ForInit -> . Asignacion
+    (51) Declaracion -> . Tipo IDENTIFIER ASSIGN Expr
+    (52) Declaracion -> . Tipo IDENTIFIER
+    (53) Declaracion -> . Tipo IDENTIFIER LBRACKET INTEGER RBRACKET
+    (54) Asignacion -> . IDENTIFIER ASSIGN Expr
+    (55) Asignacion -> . AccesoStruc ASSIGN Expr
+    (56) Asignacion -> . IDENTIFIER LBRACKET Expr RBRACKET ASSIGN Expr
+    (87) Tipo -> . INT
+    (88) Tipo -> . FLOAT
+    (89) Tipo -> . BOOL
+    (90) Tipo -> . IDENTIFIER
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 108
+    INT             shift and go to state 26
+    FLOAT           shift and go to state 27
+    BOOL            shift and go to state 28
+
+    ForInit                        shift and go to state 104
+    Declaracion                    shift and go to state 105
+    Asignacion                     shift and go to state 106
+    Tipo                           shift and go to state 107
+    AccesoStruc                    shift and go to state 109
+
+state 62
+
+    (18) If -> IF LPAREN . Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE
+    (19) If -> IF LPAREN . Expr RPAREN LBRACE Bloque RBRACE
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 110
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 63
+
+    (17) Sentencia -> RETURN Expr SEMICOLON .
+
+    RETURN          reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    STRUCT          reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    IDENTIFIER      reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    WHILE           reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    FOR             reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    IF              reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    INT             reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    FLOAT           reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    BOOL            reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    $end            reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+    RBRACE          reduce using rule 17 (Sentencia -> RETURN Expr SEMICOLON .)
+
+
+state 64
+
+    (59) AritExpr -> AritExpr PLUS . AritTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 112
+    LPAREN          shift and go to state 113
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    AritTerm                       shift and go to state 111
+    AritFactor                     shift and go to state 38
+    AccesoStruc                    shift and go to state 114
+
+state 65
+
+    (60) AritExpr -> AritExpr MINUS . AritTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 112
+    LPAREN          shift and go to state 113
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    AritTerm                       shift and go to state 115
+    AritFactor                     shift and go to state 38
+    AccesoStruc                    shift and go to state 114
+
+state 66
+
+    (72) Relacion -> AritExpr RelOp . AritExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 112
+    LPAREN          shift and go to state 113
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    AritExpr                       shift and go to state 116
+    AritTerm                       shift and go to state 36
+    AritFactor                     shift and go to state 38
+    AccesoStruc                    shift and go to state 114
+
+state 67
+
+    (73) RelOp -> LT .
+
+    IDENTIFIER      reduce using rule 73 (RelOp -> LT .)
+    LPAREN          reduce using rule 73 (RelOp -> LT .)
+    INTEGER         reduce using rule 73 (RelOp -> LT .)
+    FLOAT_NUMBER    reduce using rule 73 (RelOp -> LT .)
+
+
+state 68
+
+    (74) RelOp -> GT .
+
+    IDENTIFIER      reduce using rule 74 (RelOp -> GT .)
+    LPAREN          reduce using rule 74 (RelOp -> GT .)
+    INTEGER         reduce using rule 74 (RelOp -> GT .)
+    FLOAT_NUMBER    reduce using rule 74 (RelOp -> GT .)
+
+
+state 69
+
+    (75) RelOp -> LE .
+
+    IDENTIFIER      reduce using rule 75 (RelOp -> LE .)
+    LPAREN          reduce using rule 75 (RelOp -> LE .)
+    INTEGER         reduce using rule 75 (RelOp -> LE .)
+    FLOAT_NUMBER    reduce using rule 75 (RelOp -> LE .)
+
+
+state 70
+
+    (76) RelOp -> GE .
+
+    IDENTIFIER      reduce using rule 76 (RelOp -> GE .)
+    LPAREN          reduce using rule 76 (RelOp -> GE .)
+    INTEGER         reduce using rule 76 (RelOp -> GE .)
+    FLOAT_NUMBER    reduce using rule 76 (RelOp -> GE .)
+
+
+state 71
+
+    (77) RelOp -> EQ .
+
+    IDENTIFIER      reduce using rule 77 (RelOp -> EQ .)
+    LPAREN          reduce using rule 77 (RelOp -> EQ .)
+    INTEGER         reduce using rule 77 (RelOp -> EQ .)
+    FLOAT_NUMBER    reduce using rule 77 (RelOp -> EQ .)
+
+
+state 72
+
+    (78) RelOp -> NE .
+
+    IDENTIFIER      reduce using rule 78 (RelOp -> NE .)
+    LPAREN          reduce using rule 78 (RelOp -> NE .)
+    INTEGER         reduce using rule 78 (RelOp -> NE .)
+    FLOAT_NUMBER    reduce using rule 78 (RelOp -> NE .)
+
+
+state 73
+
+    (29) BoolExpr -> BoolExpr OR . BoolTerm
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+
+    NOT             shift and go to state 45
+    LPAREN          shift and go to state 79
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+    IDENTIFIER      shift and go to state 87
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    BoolTerm                       shift and go to state 117
+    BoolFactor                     shift and go to state 39
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+    AccesoStruc                    shift and go to state 85
+    AritExpr                       shift and go to state 86
+    AritTerm                       shift and go to state 36
+    AritFactor                     shift and go to state 38
+
+state 74
+
+    (62) AritTerm -> AritTerm TIMES . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 112
+    LPAREN          shift and go to state 113
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    AritFactor                     shift and go to state 118
+    AccesoStruc                    shift and go to state 114
+
+state 75
+
+    (63) AritTerm -> AritTerm DIV . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 112
+    LPAREN          shift and go to state 113
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    AritFactor                     shift and go to state 119
+    AccesoStruc                    shift and go to state 114
+
+state 76
+
+    (31) BoolTerm -> BoolTerm AND . BoolFactor
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+
+    NOT             shift and go to state 45
+    LPAREN          shift and go to state 79
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+    IDENTIFIER      shift and go to state 87
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    BoolFactor                     shift and go to state 120
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+    AccesoStruc                    shift and go to state 85
+    AritExpr                       shift and go to state 86
+    AritTerm                       shift and go to state 36
+    AritFactor                     shift and go to state 38
+
+state 77
+
+    (65) AritFactor -> IDENTIFIER NEW .
+
+    TIMES           reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    DIV             reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    PLUS            reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    MINUS           reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    LT              reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    GT              reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    LE              reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    GE              reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    EQ              reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    NE              reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    SEMICOLON       reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    RPAREN          reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    RBRACKET        reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    COMMA           reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    AND             reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+    OR              reduce using rule 65 (AritFactor -> IDENTIFIER NEW .)
+
+
+state 78
+
+    (71) AritFactor -> IDENTIFIER LBRACKET . Expr RBRACKET
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 121
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 79
+
+    (34) BoolFactor -> LPAREN . BoolExpr RPAREN
+    (66) AritFactor -> LPAREN . Expr RPAREN
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+
+    NOT             shift and go to state 45
+    LPAREN          shift and go to state 79
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+    IDENTIFIER      shift and go to state 87
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+
+    BoolExpr                       shift and go to state 122
+    Expr                           shift and go to state 80
+    BoolTerm                       shift and go to state 37
+    AritExpr                       shift and go to state 34
+    BoolFactor                     shift and go to state 39
+    AritTerm                       shift and go to state 36
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+    AccesoStruc                    shift and go to state 85
+    AritFactor                     shift and go to state 38
+
+state 80
+
+    (66) AritFactor -> LPAREN Expr . RPAREN
+
+    RPAREN          shift and go to state 123
+
+
+state 81
+
+    (34) BoolFactor -> LPAREN BoolExpr . RPAREN
+    (58) Expr -> BoolExpr .
+    (29) BoolExpr -> BoolExpr . OR BoolTerm
+
+  ! shift/reduce conflict for RPAREN resolved as shift
+    RPAREN          shift and go to state 124
+    OR              shift and go to state 73
+
+  ! RPAREN          [ reduce using rule 58 (Expr -> BoolExpr .) ]
+
+
+state 82
+
+    (40) BoolFactor -> AccesoStruc .
+    (70) AritFactor -> AccesoStruc .
+    (42) LlamadoMet -> AccesoStruc . LPAREN exprs_opt RPAREN
+    (80) AccesoStruc -> AccesoStruc . DOT IDENTIFIER
+
+  ! reduce/reduce conflict for RPAREN resolved using rule 40 (BoolFactor -> AccesoStruc .)
+    AND             reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    RPAREN          reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    OR              reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    TIMES           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    DIV             reduce using rule 70 (AritFactor -> AccesoStruc .)
+    PLUS            reduce using rule 70 (AritFactor -> AccesoStruc .)
+    MINUS           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LT              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    GT              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    GE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    EQ              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    NE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LPAREN          shift and go to state 58
+    DOT             shift and go to state 59
+
+  ! RPAREN          [ reduce using rule 70 (AritFactor -> AccesoStruc .) ]
+
+
+state 83
+
+    (65) AritFactor -> IDENTIFIER . NEW
+    (69) AritFactor -> IDENTIFIER .
+    (71) AritFactor -> IDENTIFIER . LBRACKET Expr RBRACKET
+    (41) LlamadoFun -> IDENTIFIER . LPAREN exprs_opt RPAREN
+    (79) AccesoStruc -> IDENTIFIER . DOT IDENTIFIER
+
+    NEW             shift and go to state 77
+    TIMES           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    DIV             reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    PLUS            reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    MINUS           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LT              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    GT              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    GE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    EQ              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    NE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    RPAREN          reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LBRACKET        shift and go to state 78
+    LPAREN          shift and go to state 54
+    DOT             shift and go to state 55
+
+
+state 84
+
+    (33) BoolFactor -> NOT BoolFactor .
+
+    AND             reduce using rule 33 (BoolFactor -> NOT BoolFactor .)
+    OR              reduce using rule 33 (BoolFactor -> NOT BoolFactor .)
+    SEMICOLON       reduce using rule 33 (BoolFactor -> NOT BoolFactor .)
+    RPAREN          reduce using rule 33 (BoolFactor -> NOT BoolFactor .)
+    RBRACKET        reduce using rule 33 (BoolFactor -> NOT BoolFactor .)
+    COMMA           reduce using rule 33 (BoolFactor -> NOT BoolFactor .)
+
+
+state 85
+
+    (40) BoolFactor -> AccesoStruc .
+    (42) LlamadoMet -> AccesoStruc . LPAREN exprs_opt RPAREN
+    (80) AccesoStruc -> AccesoStruc . DOT IDENTIFIER
+    (70) AritFactor -> AccesoStruc .
+
+  ! reduce/reduce conflict for RPAREN resolved using rule 40 (BoolFactor -> AccesoStruc .)
+    AND             reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    OR              reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    SEMICOLON       reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    RPAREN          reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    RBRACKET        reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    COMMA           reduce using rule 40 (BoolFactor -> AccesoStruc .)
+    LPAREN          shift and go to state 58
+    DOT             shift and go to state 59
+    TIMES           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    DIV             reduce using rule 70 (AritFactor -> AccesoStruc .)
+    PLUS            reduce using rule 70 (AritFactor -> AccesoStruc .)
+    MINUS           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LT              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    GT              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    GE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    EQ              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    NE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+
+  ! RPAREN          [ reduce using rule 70 (AritFactor -> AccesoStruc .) ]
+
+
+state 86
+
+    (72) Relacion -> AritExpr . RelOp AritExpr
+    (59) AritExpr -> AritExpr . PLUS AritTerm
+    (60) AritExpr -> AritExpr . MINUS AritTerm
+    (73) RelOp -> . LT
+    (74) RelOp -> . GT
+    (75) RelOp -> . LE
+    (76) RelOp -> . GE
+    (77) RelOp -> . EQ
+    (78) RelOp -> . NE
+
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    LT              shift and go to state 67
+    GT              shift and go to state 68
+    LE              shift and go to state 69
+    GE              shift and go to state 70
+    EQ              shift and go to state 71
+    NE              shift and go to state 72
+
+    RelOp                          shift and go to state 66
+
+state 87
+
+    (41) LlamadoFun -> IDENTIFIER . LPAREN exprs_opt RPAREN
+    (79) AccesoStruc -> IDENTIFIER . DOT IDENTIFIER
+    (65) AritFactor -> IDENTIFIER . NEW
+    (69) AritFactor -> IDENTIFIER .
+    (71) AritFactor -> IDENTIFIER . LBRACKET Expr RBRACKET
+
+    LPAREN          shift and go to state 54
+    DOT             shift and go to state 55
+    NEW             shift and go to state 77
+    TIMES           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    DIV             reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    PLUS            reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    MINUS           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LT              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    GT              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    GE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    EQ              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    NE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    RPAREN          reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LBRACKET        shift and go to state 78
+
+
+state 88
+
+    (51) Declaracion -> Tipo IDENTIFIER ASSIGN . Expr
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 125
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 89
+
+    (53) Declaracion -> Tipo IDENTIFIER LBRACKET . INTEGER RBRACKET
+
+    INTEGER         shift and go to state 126
+
+
+state 90
+
+    (81) Funcion -> Tipo IDENTIFIER LPAREN . parametros_opt RPAREN LBRACE Bloque RBRACE
+    (82) parametros_opt -> . Parametros
+    (83) parametros_opt -> . empty
+    (84) Parametros -> . Parametro
+    (85) Parametros -> . Parametros COMMA Parametro
+    (91) empty -> .
+    (86) Parametro -> . Tipo IDENTIFIER
+    (87) Tipo -> . INT
+    (88) Tipo -> . FLOAT
+    (89) Tipo -> . BOOL
+    (90) Tipo -> . IDENTIFIER
+
+    RPAREN          reduce using rule 91 (empty -> .)
+    INT             shift and go to state 26
+    FLOAT           shift and go to state 27
+    BOOL            shift and go to state 28
+    IDENTIFIER      shift and go to state 128
+
+    Tipo                           shift and go to state 127
+    parametros_opt                 shift and go to state 129
+    Parametros                     shift and go to state 130
+    empty                          shift and go to state 131
+    Parametro                      shift and go to state 132
+
+state 91
+
+    (50) Metodo -> Tipo IDENTIFIER DOT . IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+
+    IDENTIFIER      shift and go to state 133
+
+
+state 92
+
+    (54) Asignacion -> IDENTIFIER ASSIGN Expr .
+
+    SEMICOLON       reduce using rule 54 (Asignacion -> IDENTIFIER ASSIGN Expr .)
+    RPAREN          reduce using rule 54 (Asignacion -> IDENTIFIER ASSIGN Expr .)
+
+
+state 93
+
+    (56) Asignacion -> IDENTIFIER LBRACKET Expr . RBRACKET ASSIGN Expr
+
+    RBRACKET        shift and go to state 134
+
+
+state 94
+
+    (41) LlamadoFun -> IDENTIFIER LPAREN exprs_opt . RPAREN
+
+    RPAREN          shift and go to state 135
+
+
+state 95
+
+    (43) exprs_opt -> Exprs .
+    (46) Exprs -> Exprs . COMMA Expr
+
+    RPAREN          reduce using rule 43 (exprs_opt -> Exprs .)
+    COMMA           shift and go to state 136
+
+
+state 96
+
+    (44) exprs_opt -> empty .
+
+    RPAREN          reduce using rule 44 (exprs_opt -> empty .)
+
+
+state 97
+
+    (45) Exprs -> Expr .
+
+    COMMA           reduce using rule 45 (Exprs -> Expr .)
+    RPAREN          reduce using rule 45 (Exprs -> Expr .)
+
+
+state 98
+
+    (79) AccesoStruc -> IDENTIFIER DOT IDENTIFIER .
+
+    ASSIGN          reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    LPAREN          reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    DOT             reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    TIMES           reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    DIV             reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    PLUS            reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    MINUS           reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    LT              reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    GT              reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    LE              reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    GE              reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    EQ              reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    NE              reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    SEMICOLON       reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    AND             reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    OR              reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    RPAREN          reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    RBRACKET        reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+    COMMA           reduce using rule 79 (AccesoStruc -> IDENTIFIER DOT IDENTIFIER .)
+
+
+state 99
+
+    (47) Estructura -> STRUCT IDENTIFIER LBRACE . decl_plus RBRACE
+    (48) decl_plus -> . Declaracion SEMICOLON
+    (49) decl_plus -> . decl_plus Declaracion SEMICOLON
+    (51) Declaracion -> . Tipo IDENTIFIER ASSIGN Expr
+    (52) Declaracion -> . Tipo IDENTIFIER
+    (53) Declaracion -> . Tipo IDENTIFIER LBRACKET INTEGER RBRACKET
+    (87) Tipo -> . INT
+    (88) Tipo -> . FLOAT
+    (89) Tipo -> . BOOL
+    (90) Tipo -> . IDENTIFIER
+
+    INT             shift and go to state 26
+    FLOAT           shift and go to state 27
+    BOOL            shift and go to state 28
+    IDENTIFIER      shift and go to state 128
+
+    decl_plus                      shift and go to state 137
+    Declaracion                    shift and go to state 138
+    Tipo                           shift and go to state 107
+
+state 100
+
+    (55) Asignacion -> AccesoStruc ASSIGN Expr .
+
+    SEMICOLON       reduce using rule 55 (Asignacion -> AccesoStruc ASSIGN Expr .)
+    RPAREN          reduce using rule 55 (Asignacion -> AccesoStruc ASSIGN Expr .)
+
+
+state 101
+
+    (42) LlamadoMet -> AccesoStruc LPAREN exprs_opt . RPAREN
+
+    RPAREN          shift and go to state 139
+
+
+state 102
+
+    (80) AccesoStruc -> AccesoStruc DOT IDENTIFIER .
+
+    ASSIGN          reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    LPAREN          reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    DOT             reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    TIMES           reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    DIV             reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    PLUS            reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    MINUS           reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    LT              reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    GT              reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    LE              reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    GE              reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    EQ              reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    NE              reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    SEMICOLON       reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    AND             reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    OR              reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    RPAREN          reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    RBRACKET        reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+    COMMA           reduce using rule 80 (AccesoStruc -> AccesoStruc DOT IDENTIFIER .)
+
+
+state 103
+
+    (20) While -> WHILE LPAREN BoolExpr . RPAREN LBRACE Bloque RBRACE
+    (29) BoolExpr -> BoolExpr . OR BoolTerm
+
+    RPAREN          shift and go to state 140
+    OR              shift and go to state 73
+
+
+state 104
+
+    (21) For -> FOR LPAREN ForInit . SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE
+
+    SEMICOLON       shift and go to state 141
+
+
+state 105
+
+    (22) ForInit -> Declaracion .
+
+    SEMICOLON       reduce using rule 22 (ForInit -> Declaracion .)
+
+
+state 106
+
+    (23) ForInit -> Asignacion .
+
+    SEMICOLON       reduce using rule 23 (ForInit -> Asignacion .)
+
+
+state 107
+
+    (51) Declaracion -> Tipo . IDENTIFIER ASSIGN Expr
+    (52) Declaracion -> Tipo . IDENTIFIER
+    (53) Declaracion -> Tipo . IDENTIFIER LBRACKET INTEGER RBRACKET
+
+    IDENTIFIER      shift and go to state 142
+
+
+state 108
+
+    (54) Asignacion -> IDENTIFIER . ASSIGN Expr
+    (56) Asignacion -> IDENTIFIER . LBRACKET Expr RBRACKET ASSIGN Expr
+    (90) Tipo -> IDENTIFIER .
+    (79) AccesoStruc -> IDENTIFIER . DOT IDENTIFIER
+
+    ASSIGN          shift and go to state 52
+    LBRACKET        shift and go to state 53
+    IDENTIFIER      reduce using rule 90 (Tipo -> IDENTIFIER .)
+    DOT             shift and go to state 55
+
+
+state 109
+
+    (55) Asignacion -> AccesoStruc . ASSIGN Expr
+    (80) AccesoStruc -> AccesoStruc . DOT IDENTIFIER
+
+    ASSIGN          shift and go to state 57
+    DOT             shift and go to state 59
+
+
+state 110
+
+    (18) If -> IF LPAREN Expr . RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE
+    (19) If -> IF LPAREN Expr . RPAREN LBRACE Bloque RBRACE
+
+    RPAREN          shift and go to state 143
+
+
+state 111
+
+    (59) AritExpr -> AritExpr PLUS AritTerm .
+    (62) AritTerm -> AritTerm . TIMES AritFactor
+    (63) AritTerm -> AritTerm . DIV AritFactor
+
+    PLUS            reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    MINUS           reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    LT              reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    GT              reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    LE              reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    GE              reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    EQ              reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    NE              reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    SEMICOLON       reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    RPAREN          reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    RBRACKET        reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    COMMA           reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    AND             reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    OR              reduce using rule 59 (AritExpr -> AritExpr PLUS AritTerm .)
+    TIMES           shift and go to state 74
+    DIV             shift and go to state 75
+
+
+state 112
+
+    (65) AritFactor -> IDENTIFIER . NEW
+    (69) AritFactor -> IDENTIFIER .
+    (71) AritFactor -> IDENTIFIER . LBRACKET Expr RBRACKET
+    (79) AccesoStruc -> IDENTIFIER . DOT IDENTIFIER
+
+    NEW             shift and go to state 77
+    TIMES           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    DIV             reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    PLUS            reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    MINUS           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LT              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    GT              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    GE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    EQ              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    NE              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    SEMICOLON       reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    RPAREN          reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    RBRACKET        reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    COMMA           reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    AND             reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    OR              reduce using rule 69 (AritFactor -> IDENTIFIER .)
+    LBRACKET        shift and go to state 78
+    DOT             shift and go to state 55
+
+
+state 113
+
+    (66) AritFactor -> LPAREN . Expr RPAREN
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 80
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 114
+
+    (70) AritFactor -> AccesoStruc .
+    (80) AccesoStruc -> AccesoStruc . DOT IDENTIFIER
+
+    TIMES           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    DIV             reduce using rule 70 (AritFactor -> AccesoStruc .)
+    PLUS            reduce using rule 70 (AritFactor -> AccesoStruc .)
+    MINUS           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LT              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    GT              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    LE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    GE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    EQ              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    NE              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    SEMICOLON       reduce using rule 70 (AritFactor -> AccesoStruc .)
+    RPAREN          reduce using rule 70 (AritFactor -> AccesoStruc .)
+    RBRACKET        reduce using rule 70 (AritFactor -> AccesoStruc .)
+    COMMA           reduce using rule 70 (AritFactor -> AccesoStruc .)
+    AND             reduce using rule 70 (AritFactor -> AccesoStruc .)
+    OR              reduce using rule 70 (AritFactor -> AccesoStruc .)
+    DOT             shift and go to state 59
+
+
+state 115
+
+    (60) AritExpr -> AritExpr MINUS AritTerm .
+    (62) AritTerm -> AritTerm . TIMES AritFactor
+    (63) AritTerm -> AritTerm . DIV AritFactor
+
+    PLUS            reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    MINUS           reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    LT              reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    GT              reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    LE              reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    GE              reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    EQ              reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    NE              reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    SEMICOLON       reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    RPAREN          reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    RBRACKET        reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    COMMA           reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    AND             reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    OR              reduce using rule 60 (AritExpr -> AritExpr MINUS AritTerm .)
+    TIMES           shift and go to state 74
+    DIV             shift and go to state 75
+
+
+state 116
+
+    (72) Relacion -> AritExpr RelOp AritExpr .
+    (59) AritExpr -> AritExpr . PLUS AritTerm
+    (60) AritExpr -> AritExpr . MINUS AritTerm
+
+    AND             reduce using rule 72 (Relacion -> AritExpr RelOp AritExpr .)
+    OR              reduce using rule 72 (Relacion -> AritExpr RelOp AritExpr .)
+    SEMICOLON       reduce using rule 72 (Relacion -> AritExpr RelOp AritExpr .)
+    RPAREN          reduce using rule 72 (Relacion -> AritExpr RelOp AritExpr .)
+    RBRACKET        reduce using rule 72 (Relacion -> AritExpr RelOp AritExpr .)
+    COMMA           reduce using rule 72 (Relacion -> AritExpr RelOp AritExpr .)
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+
+
+state 117
+
+    (29) BoolExpr -> BoolExpr OR BoolTerm .
+    (31) BoolTerm -> BoolTerm . AND BoolFactor
+
+    OR              reduce using rule 29 (BoolExpr -> BoolExpr OR BoolTerm .)
+    SEMICOLON       reduce using rule 29 (BoolExpr -> BoolExpr OR BoolTerm .)
+    RPAREN          reduce using rule 29 (BoolExpr -> BoolExpr OR BoolTerm .)
+    RBRACKET        reduce using rule 29 (BoolExpr -> BoolExpr OR BoolTerm .)
+    COMMA           reduce using rule 29 (BoolExpr -> BoolExpr OR BoolTerm .)
+    AND             shift and go to state 76
+
+
+state 118
+
+    (62) AritTerm -> AritTerm TIMES AritFactor .
+
+    TIMES           reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    DIV             reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    PLUS            reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    MINUS           reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    LT              reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    GT              reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    LE              reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    GE              reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    EQ              reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    NE              reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    SEMICOLON       reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    RPAREN          reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    RBRACKET        reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    COMMA           reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    AND             reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+    OR              reduce using rule 62 (AritTerm -> AritTerm TIMES AritFactor .)
+
+
+state 119
+
+    (63) AritTerm -> AritTerm DIV AritFactor .
+
+    TIMES           reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    DIV             reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    PLUS            reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    MINUS           reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    LT              reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    GT              reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    LE              reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    GE              reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    EQ              reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    NE              reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    SEMICOLON       reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    RPAREN          reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    RBRACKET        reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    COMMA           reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    AND             reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+    OR              reduce using rule 63 (AritTerm -> AritTerm DIV AritFactor .)
+
+
+state 120
+
+    (31) BoolTerm -> BoolTerm AND BoolFactor .
+
+    AND             reduce using rule 31 (BoolTerm -> BoolTerm AND BoolFactor .)
+    OR              reduce using rule 31 (BoolTerm -> BoolTerm AND BoolFactor .)
+    SEMICOLON       reduce using rule 31 (BoolTerm -> BoolTerm AND BoolFactor .)
+    RPAREN          reduce using rule 31 (BoolTerm -> BoolTerm AND BoolFactor .)
+    RBRACKET        reduce using rule 31 (BoolTerm -> BoolTerm AND BoolFactor .)
+    COMMA           reduce using rule 31 (BoolTerm -> BoolTerm AND BoolFactor .)
+
+
+state 121
+
+    (71) AritFactor -> IDENTIFIER LBRACKET Expr . RBRACKET
+
+    RBRACKET        shift and go to state 144
+
+
+state 122
+
+    (34) BoolFactor -> LPAREN BoolExpr . RPAREN
+    (29) BoolExpr -> BoolExpr . OR BoolTerm
+    (58) Expr -> BoolExpr .
+
+  ! shift/reduce conflict for RPAREN resolved as shift
+    RPAREN          shift and go to state 124
+    OR              shift and go to state 73
+
+  ! RPAREN          [ reduce using rule 58 (Expr -> BoolExpr .) ]
+
+
+state 123
+
+    (66) AritFactor -> LPAREN Expr RPAREN .
+
+    TIMES           reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    DIV             reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    PLUS            reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    MINUS           reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    LT              reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    GT              reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    LE              reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    GE              reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    EQ              reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    NE              reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    SEMICOLON       reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    RPAREN          reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    RBRACKET        reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    COMMA           reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    AND             reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+    OR              reduce using rule 66 (AritFactor -> LPAREN Expr RPAREN .)
+
+
+state 124
+
+    (34) BoolFactor -> LPAREN BoolExpr RPAREN .
+
+    AND             reduce using rule 34 (BoolFactor -> LPAREN BoolExpr RPAREN .)
+    OR              reduce using rule 34 (BoolFactor -> LPAREN BoolExpr RPAREN .)
+    SEMICOLON       reduce using rule 34 (BoolFactor -> LPAREN BoolExpr RPAREN .)
+    RPAREN          reduce using rule 34 (BoolFactor -> LPAREN BoolExpr RPAREN .)
+    RBRACKET        reduce using rule 34 (BoolFactor -> LPAREN BoolExpr RPAREN .)
+    COMMA           reduce using rule 34 (BoolFactor -> LPAREN BoolExpr RPAREN .)
+
+
+state 125
+
+    (51) Declaracion -> Tipo IDENTIFIER ASSIGN Expr .
+
+    SEMICOLON       reduce using rule 51 (Declaracion -> Tipo IDENTIFIER ASSIGN Expr .)
+
+
+state 126
+
+    (53) Declaracion -> Tipo IDENTIFIER LBRACKET INTEGER . RBRACKET
+
+    RBRACKET        shift and go to state 145
+
+
+state 127
+
+    (86) Parametro -> Tipo . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 146
+
+
+state 128
+
+    (90) Tipo -> IDENTIFIER .
+
+    IDENTIFIER      reduce using rule 90 (Tipo -> IDENTIFIER .)
+
+
+state 129
+
+    (81) Funcion -> Tipo IDENTIFIER LPAREN parametros_opt . RPAREN LBRACE Bloque RBRACE
+
+    RPAREN          shift and go to state 147
+
+
+state 130
+
+    (82) parametros_opt -> Parametros .
+    (85) Parametros -> Parametros . COMMA Parametro
+
+    RPAREN          reduce using rule 82 (parametros_opt -> Parametros .)
+    COMMA           shift and go to state 148
+
+
+state 131
+
+    (83) parametros_opt -> empty .
+
+    RPAREN          reduce using rule 83 (parametros_opt -> empty .)
+
+
+state 132
+
+    (84) Parametros -> Parametro .
+
+    COMMA           reduce using rule 84 (Parametros -> Parametro .)
+    RPAREN          reduce using rule 84 (Parametros -> Parametro .)
+
+
+state 133
+
+    (50) Metodo -> Tipo IDENTIFIER DOT IDENTIFIER . LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE
+
+    LPAREN          shift and go to state 149
+
+
+state 134
+
+    (56) Asignacion -> IDENTIFIER LBRACKET Expr RBRACKET . ASSIGN Expr
+
+    ASSIGN          shift and go to state 150
+
+
+state 135
+
+    (41) LlamadoFun -> IDENTIFIER LPAREN exprs_opt RPAREN .
+
+    SEMICOLON       reduce using rule 41 (LlamadoFun -> IDENTIFIER LPAREN exprs_opt RPAREN .)
+    AND             reduce using rule 41 (LlamadoFun -> IDENTIFIER LPAREN exprs_opt RPAREN .)
+    OR              reduce using rule 41 (LlamadoFun -> IDENTIFIER LPAREN exprs_opt RPAREN .)
+    RPAREN          reduce using rule 41 (LlamadoFun -> IDENTIFIER LPAREN exprs_opt RPAREN .)
+    RBRACKET        reduce using rule 41 (LlamadoFun -> IDENTIFIER LPAREN exprs_opt RPAREN .)
+    COMMA           reduce using rule 41 (LlamadoFun -> IDENTIFIER LPAREN exprs_opt RPAREN .)
+
+
+state 136
+
+    (46) Exprs -> Exprs COMMA . Expr
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 151
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 137
+
+    (47) Estructura -> STRUCT IDENTIFIER LBRACE decl_plus . RBRACE
+    (49) decl_plus -> decl_plus . Declaracion SEMICOLON
+    (51) Declaracion -> . Tipo IDENTIFIER ASSIGN Expr
+    (52) Declaracion -> . Tipo IDENTIFIER
+    (53) Declaracion -> . Tipo IDENTIFIER LBRACKET INTEGER RBRACKET
+    (87) Tipo -> . INT
+    (88) Tipo -> . FLOAT
+    (89) Tipo -> . BOOL
+    (90) Tipo -> . IDENTIFIER
+
+    RBRACE          shift and go to state 152
+    INT             shift and go to state 26
+    FLOAT           shift and go to state 27
+    BOOL            shift and go to state 28
+    IDENTIFIER      shift and go to state 128
+
+    Declaracion                    shift and go to state 153
+    Tipo                           shift and go to state 107
+
+state 138
+
+    (48) decl_plus -> Declaracion . SEMICOLON
+
+    SEMICOLON       shift and go to state 154
+
+
+state 139
+
+    (42) LlamadoMet -> AccesoStruc LPAREN exprs_opt RPAREN .
+
+    SEMICOLON       reduce using rule 42 (LlamadoMet -> AccesoStruc LPAREN exprs_opt RPAREN .)
+    AND             reduce using rule 42 (LlamadoMet -> AccesoStruc LPAREN exprs_opt RPAREN .)
+    OR              reduce using rule 42 (LlamadoMet -> AccesoStruc LPAREN exprs_opt RPAREN .)
+    RPAREN          reduce using rule 42 (LlamadoMet -> AccesoStruc LPAREN exprs_opt RPAREN .)
+    RBRACKET        reduce using rule 42 (LlamadoMet -> AccesoStruc LPAREN exprs_opt RPAREN .)
+    COMMA           reduce using rule 42 (LlamadoMet -> AccesoStruc LPAREN exprs_opt RPAREN .)
+
+
+state 140
+
+    (20) While -> WHILE LPAREN BoolExpr RPAREN . LBRACE Bloque RBRACE
+
+    LBRACE          shift and go to state 155
+
+
+state 141
+
+    (21) For -> FOR LPAREN ForInit SEMICOLON . Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 156
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 142
+
+    (51) Declaracion -> Tipo IDENTIFIER . ASSIGN Expr
+    (52) Declaracion -> Tipo IDENTIFIER .
+    (53) Declaracion -> Tipo IDENTIFIER . LBRACKET INTEGER RBRACKET
+
+    ASSIGN          shift and go to state 88
+    SEMICOLON       reduce using rule 52 (Declaracion -> Tipo IDENTIFIER .)
+    LBRACKET        shift and go to state 89
+
+
+state 143
+
+    (18) If -> IF LPAREN Expr RPAREN . LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE
+    (19) If -> IF LPAREN Expr RPAREN . LBRACE Bloque RBRACE
+
+    LBRACE          shift and go to state 157
+
+
+state 144
+
+    (71) AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .
+
+    TIMES           reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    DIV             reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    PLUS            reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    MINUS           reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    LT              reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    GT              reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    LE              reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    GE              reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    EQ              reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    NE              reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    SEMICOLON       reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    RPAREN          reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    RBRACKET        reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    COMMA           reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    AND             reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+    OR              reduce using rule 71 (AritFactor -> IDENTIFIER LBRACKET Expr RBRACKET .)
+
+
+state 145
+
+    (53) Declaracion -> Tipo IDENTIFIER LBRACKET INTEGER RBRACKET .
+
+    SEMICOLON       reduce using rule 53 (Declaracion -> Tipo IDENTIFIER LBRACKET INTEGER RBRACKET .)
+
+
+state 146
+
+    (86) Parametro -> Tipo IDENTIFIER .
+
+    COMMA           reduce using rule 86 (Parametro -> Tipo IDENTIFIER .)
+    RPAREN          reduce using rule 86 (Parametro -> Tipo IDENTIFIER .)
+
+
+state 147
+
+    (81) Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN . LBRACE Bloque RBRACE
+
+    LBRACE          shift and go to state 158
+
+
+state 148
+
+    (85) Parametros -> Parametros COMMA . Parametro
+    (86) Parametro -> . Tipo IDENTIFIER
+    (87) Tipo -> . INT
+    (88) Tipo -> . FLOAT
+    (89) Tipo -> . BOOL
+    (90) Tipo -> . IDENTIFIER
+
+    INT             shift and go to state 26
+    FLOAT           shift and go to state 27
+    BOOL            shift and go to state 28
+    IDENTIFIER      shift and go to state 128
+
+    Parametro                      shift and go to state 159
+    Tipo                           shift and go to state 127
+
+state 149
+
+    (50) Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN . parametros_opt RPAREN LBRACE Bloque RBRACE
+    (82) parametros_opt -> . Parametros
+    (83) parametros_opt -> . empty
+    (84) Parametros -> . Parametro
+    (85) Parametros -> . Parametros COMMA Parametro
+    (91) empty -> .
+    (86) Parametro -> . Tipo IDENTIFIER
+    (87) Tipo -> . INT
+    (88) Tipo -> . FLOAT
+    (89) Tipo -> . BOOL
+    (90) Tipo -> . IDENTIFIER
+
+    RPAREN          reduce using rule 91 (empty -> .)
+    INT             shift and go to state 26
+    FLOAT           shift and go to state 27
+    BOOL            shift and go to state 28
+    IDENTIFIER      shift and go to state 128
+
+    Tipo                           shift and go to state 127
+    parametros_opt                 shift and go to state 160
+    Parametros                     shift and go to state 130
+    empty                          shift and go to state 131
+    Parametro                      shift and go to state 132
+
+state 150
+
+    (56) Asignacion -> IDENTIFIER LBRACKET Expr RBRACKET ASSIGN . Expr
+    (57) Expr -> . AritExpr
+    (58) Expr -> . BoolExpr
+    (59) AritExpr -> . AritExpr PLUS AritTerm
+    (60) AritExpr -> . AritExpr MINUS AritTerm
+    (61) AritExpr -> . AritTerm
+    (29) BoolExpr -> . BoolExpr OR BoolTerm
+    (30) BoolExpr -> . BoolTerm
+    (62) AritTerm -> . AritTerm TIMES AritFactor
+    (63) AritTerm -> . AritTerm DIV AritFactor
+    (64) AritTerm -> . AritFactor
+    (31) BoolTerm -> . BoolTerm AND BoolFactor
+    (32) BoolTerm -> . BoolFactor
+    (65) AritFactor -> . IDENTIFIER NEW
+    (66) AritFactor -> . LPAREN Expr RPAREN
+    (67) AritFactor -> . INTEGER
+    (68) AritFactor -> . FLOAT_NUMBER
+    (69) AritFactor -> . IDENTIFIER
+    (70) AritFactor -> . AccesoStruc
+    (71) AritFactor -> . IDENTIFIER LBRACKET Expr RBRACKET
+    (33) BoolFactor -> . NOT BoolFactor
+    (34) BoolFactor -> . LPAREN BoolExpr RPAREN
+    (35) BoolFactor -> . TRUE
+    (36) BoolFactor -> . FALSE
+    (37) BoolFactor -> . Relacion
+    (38) BoolFactor -> . LlamadoFun
+    (39) BoolFactor -> . LlamadoMet
+    (40) BoolFactor -> . AccesoStruc
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+    (72) Relacion -> . AritExpr RelOp AritExpr
+    (41) LlamadoFun -> . IDENTIFIER LPAREN exprs_opt RPAREN
+    (42) LlamadoMet -> . AccesoStruc LPAREN exprs_opt RPAREN
+
+    IDENTIFIER      shift and go to state 40
+    LPAREN          shift and go to state 41
+    INTEGER         shift and go to state 42
+    FLOAT_NUMBER    shift and go to state 43
+    NOT             shift and go to state 45
+    TRUE            shift and go to state 46
+    FALSE           shift and go to state 47
+
+    Expr                           shift and go to state 161
+    AritExpr                       shift and go to state 34
+    BoolExpr                       shift and go to state 35
+    AritTerm                       shift and go to state 36
+    BoolTerm                       shift and go to state 37
+    AritFactor                     shift and go to state 38
+    BoolFactor                     shift and go to state 39
+    AccesoStruc                    shift and go to state 44
+    Relacion                       shift and go to state 48
+    LlamadoFun                     shift and go to state 49
+    LlamadoMet                     shift and go to state 50
+
+state 151
+
+    (46) Exprs -> Exprs COMMA Expr .
+
+    COMMA           reduce using rule 46 (Exprs -> Exprs COMMA Expr .)
+    RPAREN          reduce using rule 46 (Exprs -> Exprs COMMA Expr .)
+
+
+state 152
+
+    (47) Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .
+
+    RETURN          reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    STRUCT          reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    IDENTIFIER      reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    WHILE           reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    FOR             reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    IF              reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    INT             reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    FLOAT           reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    BOOL            reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    $end            reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+    RBRACE          reduce using rule 47 (Estructura -> STRUCT IDENTIFIER LBRACE decl_plus RBRACE .)
+
+
+state 153
+
+    (49) decl_plus -> decl_plus Declaracion . SEMICOLON
+
+    SEMICOLON       shift and go to state 162
+
+
+state 154
+
+    (48) decl_plus -> Declaracion SEMICOLON .
+
+    RBRACE          reduce using rule 48 (decl_plus -> Declaracion SEMICOLON .)
+    INT             reduce using rule 48 (decl_plus -> Declaracion SEMICOLON .)
+    FLOAT           reduce using rule 48 (decl_plus -> Declaracion SEMICOLON .)
+    BOOL            reduce using rule 48 (decl_plus -> Declaracion SEMICOLON .)
+    IDENTIFIER      reduce using rule 48 (decl_plus -> Declaracion SEMICOLON .)
+
+
+state 155
+
+    (20) While -> WHILE LPAREN BoolExpr RPAREN LBRACE . Bloque RBRACE
+    (4) Bloque -> . sentencia_list
+    (5) sentencia_list -> . sentencia_list Sentencia
+    (6) sentencia_list -> . empty
+    (91) empty -> .
+
+    RETURN          reduce using rule 91 (empty -> .)
+    STRUCT          reduce using rule 91 (empty -> .)
+    IDENTIFIER      reduce using rule 91 (empty -> .)
+    WHILE           reduce using rule 91 (empty -> .)
+    FOR             reduce using rule 91 (empty -> .)
+    IF              reduce using rule 91 (empty -> .)
+    INT             reduce using rule 91 (empty -> .)
+    FLOAT           reduce using rule 91 (empty -> .)
+    BOOL            reduce using rule 91 (empty -> .)
+    RBRACE          reduce using rule 91 (empty -> .)
+
+    Bloque                         shift and go to state 163
+    sentencia_list                 shift and go to state 5
+    empty                          shift and go to state 6
+
+state 156
+
+    (21) For -> FOR LPAREN ForInit SEMICOLON Expr . SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE
+
+    SEMICOLON       shift and go to state 164
+
+
+state 157
+
+    (18) If -> IF LPAREN Expr RPAREN LBRACE . Bloque RBRACE ELSE LBRACE Bloque RBRACE
+    (19) If -> IF LPAREN Expr RPAREN LBRACE . Bloque RBRACE
+    (4) Bloque -> . sentencia_list
+    (5) sentencia_list -> . sentencia_list Sentencia
+    (6) sentencia_list -> . empty
+    (91) empty -> .
+
+    RETURN          reduce using rule 91 (empty -> .)
+    STRUCT          reduce using rule 91 (empty -> .)
+    IDENTIFIER      reduce using rule 91 (empty -> .)
+    WHILE           reduce using rule 91 (empty -> .)
+    FOR             reduce using rule 91 (empty -> .)
+    IF              reduce using rule 91 (empty -> .)
+    INT             reduce using rule 91 (empty -> .)
+    FLOAT           reduce using rule 91 (empty -> .)
+    BOOL            reduce using rule 91 (empty -> .)
+    RBRACE          reduce using rule 91 (empty -> .)
+
+    Bloque                         shift and go to state 165
+    sentencia_list                 shift and go to state 5
+    empty                          shift and go to state 6
+
+state 158
+
+    (81) Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE . Bloque RBRACE
+    (4) Bloque -> . sentencia_list
+    (5) sentencia_list -> . sentencia_list Sentencia
+    (6) sentencia_list -> . empty
+    (91) empty -> .
+
+    RETURN          reduce using rule 91 (empty -> .)
+    STRUCT          reduce using rule 91 (empty -> .)
+    IDENTIFIER      reduce using rule 91 (empty -> .)
+    WHILE           reduce using rule 91 (empty -> .)
+    FOR             reduce using rule 91 (empty -> .)
+    IF              reduce using rule 91 (empty -> .)
+    INT             reduce using rule 91 (empty -> .)
+    FLOAT           reduce using rule 91 (empty -> .)
+    BOOL            reduce using rule 91 (empty -> .)
+    RBRACE          reduce using rule 91 (empty -> .)
+
+    Bloque                         shift and go to state 166
+    sentencia_list                 shift and go to state 5
+    empty                          shift and go to state 6
+
+state 159
+
+    (85) Parametros -> Parametros COMMA Parametro .
+
+    COMMA           reduce using rule 85 (Parametros -> Parametros COMMA Parametro .)
+    RPAREN          reduce using rule 85 (Parametros -> Parametros COMMA Parametro .)
+
+
+state 160
+
+    (50) Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt . RPAREN LBRACE Bloque RBRACE
+
+    RPAREN          shift and go to state 167
+
+
+state 161
+
+    (56) Asignacion -> IDENTIFIER LBRACKET Expr RBRACKET ASSIGN Expr .
+
+    SEMICOLON       reduce using rule 56 (Asignacion -> IDENTIFIER LBRACKET Expr RBRACKET ASSIGN Expr .)
+    RPAREN          reduce using rule 56 (Asignacion -> IDENTIFIER LBRACKET Expr RBRACKET ASSIGN Expr .)
+
+
+state 162
+
+    (49) decl_plus -> decl_plus Declaracion SEMICOLON .
+
+    RBRACE          reduce using rule 49 (decl_plus -> decl_plus Declaracion SEMICOLON .)
+    INT             reduce using rule 49 (decl_plus -> decl_plus Declaracion SEMICOLON .)
+    FLOAT           reduce using rule 49 (decl_plus -> decl_plus Declaracion SEMICOLON .)
+    BOOL            reduce using rule 49 (decl_plus -> decl_plus Declaracion SEMICOLON .)
+    IDENTIFIER      reduce using rule 49 (decl_plus -> decl_plus Declaracion SEMICOLON .)
+
+
+state 163
+
+    (20) While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque . RBRACE
+
+    RBRACE          shift and go to state 168
+
+
+state 164
+
+    (21) For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON . ForUpdate RPAREN LBRACE Bloque RBRACE
+    (24) ForUpdate -> . Asignacion
+    (25) ForUpdate -> . Incremento
+    (26) ForUpdate -> . Decremento
+    (54) Asignacion -> . IDENTIFIER ASSIGN Expr
+    (55) Asignacion -> . AccesoStruc ASSIGN Expr
+    (56) Asignacion -> . IDENTIFIER LBRACKET Expr RBRACKET ASSIGN Expr
+    (27) Incremento -> . IDENTIFIER INC
+    (28) Decremento -> . IDENTIFIER DEC
+    (79) AccesoStruc -> . IDENTIFIER DOT IDENTIFIER
+    (80) AccesoStruc -> . AccesoStruc DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 173
+
+    ForUpdate                      shift and go to state 169
+    Asignacion                     shift and go to state 170
+    Incremento                     shift and go to state 171
+    Decremento                     shift and go to state 172
+    AccesoStruc                    shift and go to state 109
+
+state 165
+
+    (18) If -> IF LPAREN Expr RPAREN LBRACE Bloque . RBRACE ELSE LBRACE Bloque RBRACE
+    (19) If -> IF LPAREN Expr RPAREN LBRACE Bloque . RBRACE
+
+    RBRACE          shift and go to state 174
+
+
+state 166
+
+    (81) Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque . RBRACE
+
+    RBRACE          shift and go to state 175
+
+
+state 167
+
+    (50) Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN . LBRACE Bloque RBRACE
+
+    LBRACE          shift and go to state 176
+
+
+state 168
+
+    (20) While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .
+
+    RETURN          reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    STRUCT          reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    IDENTIFIER      reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    WHILE           reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    FOR             reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    IF              reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    INT             reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    FLOAT           reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    BOOL            reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    $end            reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+    RBRACE          reduce using rule 20 (While -> WHILE LPAREN BoolExpr RPAREN LBRACE Bloque RBRACE .)
+
+
+state 169
+
+    (21) For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate . RPAREN LBRACE Bloque RBRACE
+
+    RPAREN          shift and go to state 177
+
+
+state 170
+
+    (24) ForUpdate -> Asignacion .
+
+    RPAREN          reduce using rule 24 (ForUpdate -> Asignacion .)
+
+
+state 171
+
+    (25) ForUpdate -> Incremento .
+
+    RPAREN          reduce using rule 25 (ForUpdate -> Incremento .)
+
+
+state 172
+
+    (26) ForUpdate -> Decremento .
+
+    RPAREN          reduce using rule 26 (ForUpdate -> Decremento .)
+
+
+state 173
+
+    (54) Asignacion -> IDENTIFIER . ASSIGN Expr
+    (56) Asignacion -> IDENTIFIER . LBRACKET Expr RBRACKET ASSIGN Expr
+    (27) Incremento -> IDENTIFIER . INC
+    (28) Decremento -> IDENTIFIER . DEC
+    (79) AccesoStruc -> IDENTIFIER . DOT IDENTIFIER
+
+    ASSIGN          shift and go to state 52
+    LBRACKET        shift and go to state 53
+    INC             shift and go to state 178
+    DEC             shift and go to state 179
+    DOT             shift and go to state 55
+
+
+state 174
+
+    (18) If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE . ELSE LBRACE Bloque RBRACE
+    (19) If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .
+
+    ELSE            shift and go to state 180
+    RETURN          reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    STRUCT          reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    IDENTIFIER      reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    WHILE           reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    FOR             reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    IF              reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    INT             reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    FLOAT           reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    BOOL            reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    $end            reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+    RBRACE          reduce using rule 19 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE .)
+
+
+state 175
+
+    (81) Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .
+
+    RETURN          reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    STRUCT          reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    IDENTIFIER      reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    WHILE           reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    FOR             reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    IF              reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    INT             reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    FLOAT           reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    BOOL            reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    $end            reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    RBRACE          reduce using rule 81 (Funcion -> Tipo IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+
+
+state 176
+
+    (50) Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE . Bloque RBRACE
+    (4) Bloque -> . sentencia_list
+    (5) sentencia_list -> . sentencia_list Sentencia
+    (6) sentencia_list -> . empty
+    (91) empty -> .
+
+    RETURN          reduce using rule 91 (empty -> .)
+    STRUCT          reduce using rule 91 (empty -> .)
+    IDENTIFIER      reduce using rule 91 (empty -> .)
+    WHILE           reduce using rule 91 (empty -> .)
+    FOR             reduce using rule 91 (empty -> .)
+    IF              reduce using rule 91 (empty -> .)
+    INT             reduce using rule 91 (empty -> .)
+    FLOAT           reduce using rule 91 (empty -> .)
+    BOOL            reduce using rule 91 (empty -> .)
+    RBRACE          reduce using rule 91 (empty -> .)
+
+    Bloque                         shift and go to state 181
+    sentencia_list                 shift and go to state 5
+    empty                          shift and go to state 6
+
+state 177
+
+    (21) For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN . LBRACE Bloque RBRACE
+
+    LBRACE          shift and go to state 182
+
+
+state 178
+
+    (27) Incremento -> IDENTIFIER INC .
+
+    RPAREN          reduce using rule 27 (Incremento -> IDENTIFIER INC .)
+
+
+state 179
+
+    (28) Decremento -> IDENTIFIER DEC .
+
+    RPAREN          reduce using rule 28 (Decremento -> IDENTIFIER DEC .)
+
+
+state 180
+
+    (18) If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE . LBRACE Bloque RBRACE
+
+    LBRACE          shift and go to state 183
+
+
+state 181
+
+    (50) Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque . RBRACE
+
+    RBRACE          shift and go to state 184
+
+
+state 182
+
+    (21) For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE . Bloque RBRACE
+    (4) Bloque -> . sentencia_list
+    (5) sentencia_list -> . sentencia_list Sentencia
+    (6) sentencia_list -> . empty
+    (91) empty -> .
+
+    RETURN          reduce using rule 91 (empty -> .)
+    STRUCT          reduce using rule 91 (empty -> .)
+    IDENTIFIER      reduce using rule 91 (empty -> .)
+    WHILE           reduce using rule 91 (empty -> .)
+    FOR             reduce using rule 91 (empty -> .)
+    IF              reduce using rule 91 (empty -> .)
+    INT             reduce using rule 91 (empty -> .)
+    FLOAT           reduce using rule 91 (empty -> .)
+    BOOL            reduce using rule 91 (empty -> .)
+    RBRACE          reduce using rule 91 (empty -> .)
+
+    Bloque                         shift and go to state 185
+    sentencia_list                 shift and go to state 5
+    empty                          shift and go to state 6
+
+state 183
+
+    (18) If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE . Bloque RBRACE
+    (4) Bloque -> . sentencia_list
+    (5) sentencia_list -> . sentencia_list Sentencia
+    (6) sentencia_list -> . empty
+    (91) empty -> .
+
+    RETURN          reduce using rule 91 (empty -> .)
+    STRUCT          reduce using rule 91 (empty -> .)
+    IDENTIFIER      reduce using rule 91 (empty -> .)
+    WHILE           reduce using rule 91 (empty -> .)
+    FOR             reduce using rule 91 (empty -> .)
+    IF              reduce using rule 91 (empty -> .)
+    INT             reduce using rule 91 (empty -> .)
+    FLOAT           reduce using rule 91 (empty -> .)
+    BOOL            reduce using rule 91 (empty -> .)
+    RBRACE          reduce using rule 91 (empty -> .)
+
+    Bloque                         shift and go to state 186
+    sentencia_list                 shift and go to state 5
+    empty                          shift and go to state 6
+
+state 184
+
+    (50) Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .
+
+    RETURN          reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    STRUCT          reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    IDENTIFIER      reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    WHILE           reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    FOR             reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    IF              reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    INT             reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    FLOAT           reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    BOOL            reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    $end            reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+    RBRACE          reduce using rule 50 (Metodo -> Tipo IDENTIFIER DOT IDENTIFIER LPAREN parametros_opt RPAREN LBRACE Bloque RBRACE .)
+
+
+state 185
+
+    (21) For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque . RBRACE
+
+    RBRACE          shift and go to state 187
+
+
+state 186
+
+    (18) If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque . RBRACE
+
+    RBRACE          shift and go to state 188
+
+
+state 187
+
+    (21) For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .
+
+    RETURN          reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    STRUCT          reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    IDENTIFIER      reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    WHILE           reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    FOR             reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    IF              reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    INT             reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    FLOAT           reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    BOOL            reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    $end            reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+    RBRACE          reduce using rule 21 (For -> FOR LPAREN ForInit SEMICOLON Expr SEMICOLON ForUpdate RPAREN LBRACE Bloque RBRACE .)
+
+
+state 188
+
+    (18) If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .
+
+    RETURN          reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    STRUCT          reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    IDENTIFIER      reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    WHILE           reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    FOR             reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    IF              reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    INT             reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    FLOAT           reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    BOOL            reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    $end            reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+    RBRACE          reduce using rule 18 (If -> IF LPAREN Expr RPAREN LBRACE Bloque RBRACE ELSE LBRACE Bloque RBRACE .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for RETURN in state 5 resolved as shift
+WARNING: shift/reduce conflict for STRUCT in state 5 resolved as shift
+WARNING: shift/reduce conflict for IDENTIFIER in state 5 resolved as shift
+WARNING: shift/reduce conflict for WHILE in state 5 resolved as shift
+WARNING: shift/reduce conflict for FOR in state 5 resolved as shift
+WARNING: shift/reduce conflict for IF in state 5 resolved as shift
+WARNING: shift/reduce conflict for INT in state 5 resolved as shift
+WARNING: shift/reduce conflict for FLOAT in state 5 resolved as shift
+WARNING: shift/reduce conflict for BOOL in state 5 resolved as shift
+WARNING: shift/reduce conflict for RPAREN in state 81 resolved as shift
+WARNING: shift/reduce conflict for RPAREN in state 122 resolved as shift
+WARNING: reduce/reduce conflict in state 2 resolved using rule (Programa -> bloque_list)
+WARNING: rejected rule (empty -> <empty>) in state 2
+WARNING: reduce/reduce conflict in state 44 resolved using rule (BoolFactor -> AccesoStruc)
+WARNING: rejected rule (AritFactor -> AccesoStruc) in state 44
+WARNING: reduce/reduce conflict in state 82 resolved using rule (BoolFactor -> AccesoStruc)
+WARNING: rejected rule (AritFactor -> AccesoStruc) in state 82
+WARNING: reduce/reduce conflict in state 85 resolved using rule (BoolFactor -> AccesoStruc)
+WARNING: rejected rule (AritFactor -> AccesoStruc) in state 85
