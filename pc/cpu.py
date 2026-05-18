@@ -18,10 +18,11 @@ class CPU:
         0b1101: "R4",  0b1110: "R5",
     }
 
-    def __init__(self, ram, registers, alu):
+    def __init__(self, ram, registers, alu, heap=None):
         self.ram = ram
         self.reg = registers
         self.alu = alu
+        self.heap = heap
         self.running = True
         self.cycle_count = 0
 
@@ -90,7 +91,21 @@ class CPU:
         if instr == HLT_WORD:
             self.running = False
             return
-
+        # --- INTERCEPCIÓN SYSCALL ALLOC PARA EL GARBAGE COLLECTOR ---
+        if instr == 0xEEEEEEEEEEEEEEEE: # Palabra binaria asignada a SYS_ALLOC
+            if self.heap is not None:
+                # R1 (código 0xA) contiene el tamaño solicitado por el compilador
+                tamanho_solicitado = self.get_reg(0xA) 
+                
+                # El heap ejecuta la asignación (y corre el GC si es necesario)
+                direccion_heap = self.heap.allocate(tamanho_solicitado, self)
+                
+                # Devolvemos la dirección del puntero en R5 (código 0xE) como indica nuestro compilador
+                self.set_reg(0xE, direccion_heap)
+            else:
+                print("[CPU ERROR] Se invocó SYS_ALLOC pero el Heap no está inicializado.")
+                self.running = False
+            return
         # 2. PREFIJO DE 8 BITS — bits [63:56]
         #    Saltos (formato J) y LOAD MEM
         opcode8 = (instr >> 56) & 0xFF
