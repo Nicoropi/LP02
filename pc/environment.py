@@ -6,7 +6,7 @@ from alu    import Alu
 from fpu import FPU
 from cpu      import CPU
 from loader   import Loader
-
+from heap_manager import VirtualHeap
 MAX_RAM = 2 ** 16
 
 
@@ -26,8 +26,9 @@ def main():
     reg  = Registers()
     fpu = FPU(reg)
     alu  = Alu(reg, fpu)
-    cpu  = CPU(ram, reg, alu)
-
+    heap = VirtualHeap(ram_reference=ram, start_address=20000, end_address=40000)
+    
+    cpu = CPU(ram, reg, alu, heap=heap)
     #Cargar programa con el Loader (ANTES del ciclo run)
     loader = Loader(start_address=base_addr)
     entry_point = loader.load(filename, ram)
