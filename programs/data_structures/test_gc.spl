@@ -1,0 +1,23 @@
+struct Nodo {
+    int id;
+    int valor;
+}
+
+int main() {
+    int control = 1;
+
+    Nodo n1 = Nodo new;
+    n1.id = 101;
+    n1.valor = 500;
+
+    if (true) {
+        Nodo n_temporal = Nodo new;
+        n_temporal.id = 999;
+        n_temporal.valor = 999;
+    }
+
+    Nodo n2 = Nodo new;
+    n2.id = 102;
+
+    return 0;
+}
