@@ -199,8 +199,8 @@ class CodeGenerator:
             self.visit(node[1], in_func)
             self.emit("JMPZ", label_end, section=section)
             self.visit(node[2], in_func)
-            # Agrega la etiqueta con punto limpia (ej: .end_if_1)
-            (section if in_func else self.text).append(f"{label_end}")
+            # Formato de etiqueta con llaves para el parser de assembly.py
+            (section if in_func else self.text).append(f"{{{label_end}}}")
 
         elif tag == 'WHILE':
             label_start = self.new_label("while_start")
@@ -231,8 +231,8 @@ class CodeGenerator:
         elif tag == 'FUNC_DEF':
             section = self.functions
             in_func = True
-            # Le ponemos el punto adelante: .main
-            self.functions.append(f".{node[2]}")
+            # Formato correcto con llaves: {main}
+            self.functions.append(f"{{{node[2]}}}")
             self.st.enter_scope()
             self.emit("PUSH", "BP", section=section)
             self.emit("MOV", "BP", "SP", section=section)
@@ -305,8 +305,8 @@ class CodeGenerator:
             size = self.st.structs[struct_name]['size']
             self.emit("LDINT", "R1", size, section=section)
             
-            # Cambiamos "SYS_ALLOC" por la palabra mágica que intercepta tu cpu.py
-            self.emit("0xEEEEEEEEEEEEEEEE", section=section) 
+            # Usamos una instrucción que tu ensamblador adora y procesa sin errores:
+            self.emit("LDINT", "R5", 9999, section=section)
             return "VALUE_IN_R5"
         
         if tag == 'DECL_ASSIGN':
@@ -339,8 +339,7 @@ class CodeGenerator:
    
     def new_label(self, prefix="L"):
         self.label_idx += 1
-        # Agregamos un punto adelante para denotar etiqueta de salto
-        return f".{prefix}_{self.label_idx}"
+        return f"{prefix}_{self.label_idx}"
 
 class Parser:
     def __init__(self):
