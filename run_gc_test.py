@@ -75,7 +75,7 @@ def run_pipeline():
             cpu.fetch()
             
             # Capturar la Syscall personalizada
-            if cpu.reg.IR == 0xEEEEEEEEEEEEEEEE:
+            if cpu.get_reg(0xE) == 9999:
                 size_requested = cpu.get_reg(0xA) # R1 contiene el tamaño
                 print(f"\n[SYS_ALLOC DETECTADA] CPU solicita {size_requested} celdas.")
                 allocated_addr = heap.allocate(size_requested, cpu)
