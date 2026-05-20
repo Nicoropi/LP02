@@ -3,64 +3,138 @@ from lexic_analizer import Lexer
 
 class SymbolTable:
     def __init__(self):
-        self.scopes = [{}]  # Stack of scopes
-        self.structs = {}   # Map of struct definitions
-        self.offset_stack = [0] # Offset tracking per scope level
+        self.scopes = [{}]
+        self.structs = {}
+        
+        self.offset_stack = [0]
 
     def enter_scope(self):
         self.scopes.append({})
         self.offset_stack.append(self.offset_stack[-1])
 
+    def reset_function_offsets(self):
+        self.offset_stack[-1] = 0
+
     def exit_scope(self):
         self.scopes.pop()
         self.offset_stack.pop()
 
-    def declare(self, name, var_type, size=1):
+    def declare(self, name, var_type, size=1, is_global=False):
         if name in self.scopes[-1]:
-            raise Exception(f"Error: {name} already declared in this scope.")
-        
-        offset = self.offset_stack[-1]
-        self.scopes[-1][name] = {'type': var_type, 'offset': offset, 'size': size}
-        self.offset_stack[-1] += size
+            raise Exception(f"Error: {name} already declared")
+
+        if is_global:
+            offset = None
+
+        else:
+            offset = self.offset_stack[-1]
+            self.offset_stack[-1] -= size
+
+        self.scopes[-1][name] = {
+            'type': var_type,
+            'offset': offset,
+            'size': size,
+            'global': is_global
+        }
+
         return offset
 
     def lookup(self, name):
         for scope in reversed(self.scopes):
             if name in scope:
                 return scope[name]
-        raise Exception(f"Error: Undefined variable {name}")
+
+        raise Exception(f"Undefined variable {name}")
 
     def define_struct(self, name, members):
-        # members: list of (type, member_name, size)
         struct_data = {}
         total_size = 0
+
         for m_type, m_name, m_size in members:
-            struct_data[m_name] = {'type': m_type, 'offset': total_size, 'size': m_size}
+            struct_data[m_name] = {
+                'type': m_type,
+                'offset': total_size,
+                'size': m_size
+            }
             total_size += m_size
-        self.structs[name] = {'members': struct_data, 'size': total_size}
+
+        self.structs[name] = {
+            'members': struct_data,
+            'size': total_size
+        }
 
 class CodeGenerator:
     def __init__(self):
         self.st = SymbolTable()
+
         self.text = []
         self.functions = []
         self.data = []
+
         self.label_idx = 0
+        self.current_function = None
+        self.in_function = False
+
         self.emit("MOV", "BP", "SP")
 
     def new_label(self, prefix="L"):
         self.label_idx += 1
         return f"{prefix}_{self.label_idx}"
 
-    def emit(self, instr, *params, section = None):
+    def current_section(self):
+        return self.functions if self.in_function else self.text
+
+    def place_label(self, label):
+        self.current_section().append(f"{{{label}}}")
+
+    def load_variable(self, name, target="R5"):
+        info = self.st.lookup(name)
+
+        if info['global']:
+            self.emit("LDINT", "R1", f"global_{name}")
+            self.emit("LOADMEM", target, "R1")
+        else:
+            self.emit("LDINT", "R1", info['offset'])
+            self.emit("ADD", "R1", "BP", "R1")
+            self.emit("LOADMEM", target, "R1")
+
+    def store_variable(self, name, source="R5"):
+        info = self.st.lookup(name)
+
+        if info['global']:
+            self.emit("LDINT", "R1", f"global_{name}")
+            self.emit("STOR", source, "R1")
+        else:
+            self.emit("LDINT", "R1", info['offset'])
+            self.emit("ADD", "R1", "BP", "R1")
+            self.emit("STOR", source, "R1")
+
+    def emit_condition_jump_false(self, condition, label):
+        self.visit(condition)
+        self.emit("LDINT", "RA", "0")
+        self.emit("COMP", "R5", "RA")
+        self.emit("JMPZ", label)
+
+    def emit(self, instr, *params, section=None):
         if section is None:
-            self.text.append(f"{instr} " + ", ".join(map(str, params)))
+            section = self.current_section()
+
+        if len(params) == 0:
+            section.append(instr)
         else:
             section.append(f"{instr} " + ", ".join(map(str, params)))
 
     def generate(self, ast):
         self.visit(ast)
-        return "data:\n" + "\n".join(self.data) + "\ntext:\n" + "\n".join(self.text) + "\nHLT\n" + "\n".join(self.functions)
+
+        return (
+            "data:\n"
+            + "\n".join(self.data)
+            + "\ntext:\n"
+            + "\n".join(self.text)
+            + "\nHLT\n"
+            + "\n".join(self.functions)
+        )
 
     def visit(self, node, in_func: bool = False):
         if node is None: return
@@ -68,13 +142,17 @@ class CodeGenerator:
         section = self.functions if in_func else None
         
         if not isinstance(node, tuple):
-            if isinstance(node, (int, float)): self.emit("LDINT", "R5", node, section=section)
-            if isinstance(node, str): # It's a variable name
-                var = self.st.lookup(node)
-                self.emit("LDINT", "R5", var['offset'], section=section)
-                self.emit("ADD", "R5", "BP", "R5", section=section)
-                self.emit("LOADMEM", "R5", "R5", section=section)
-            return node
+            if isinstance(node, int):
+                self.emit("LDINT", "R5", node)
+                return
+
+            if isinstance(node, float):
+                self.emit("LOADFLOAT", "R5", node)
+                return
+
+            if isinstance(node, str):
+                self.load_variable(node)
+                return
         
         tag = node[0]
         # print(node)
@@ -88,72 +166,161 @@ class CodeGenerator:
             self.st.exit_scope()
 
         elif tag == 'DECL':
-            self.st.declare(node[2], node[1], in_func)
-            self.emit("INC", "SP") # Reserve stack space
+            is_global = not self.in_function
 
+            if is_global:
+                self.st.declare(node[2], node[1], is_global=True)
+                self.data.append(f"{{global_{node[2]}}}")
+                self.data.append("0")
+            else:
+                self.st.declare(node[2], node[1])
+                self.emit("DEC", "SP")
+
+        elif tag == 'DECL_ASSIGN':
+            is_global = not self.in_function
+
+            if is_global:
+                self.st.declare(node[2], node[1], is_global=True)
+
+                if isinstance(node[3], int):
+                    value = node[3]
+                else:
+                    value = 0
+
+                self.data.append(f"{{global_{node[2]}}}")
+                self.data.append(str(value))
+
+            else:
+                self.st.declare(node[2], node[1])
+                self.emit("DEC", "SP")
+                self.visit(node[3])
+                self.store_variable(node[2])
+        
         elif tag == 'DECL_ARRAY':
             size = int(node[3])
             self.st.declare(node[2], node[1], size=size)
-            for _ in range(size): self.emit("INC", "SP", section=section)
+            for _ in range(size): self.emit("DEC", "SP", section=section)
         
         elif tag == 'ASSIGN':
-            var_name = node[1]
-            val = self.visit(node[2], in_func) # This would usually return a register
-            var_info = self.st.lookup(var_name)
-            # Find address: base_ptr + offset
-            self.emit("LDINT", "R1", var_info['offset'], section=section)
-            self.emit("ADD", "R2", "BP", "R1", section=section) # R2 = address
-            self.emit("STOR", "R5", "R2", section=section) # Assuming R5 has the value
+            self.visit(node[2])
+            self.store_variable(node[1])
 
         elif tag == 'IF':
-            label_end = self.new_label("end_if")
-            self.visit(node[1], in_func) # Generate condition logic, sets Z flag
-            self.emit("JMPZ", label_end, section=section)
-            self.visit(node[2], in_func) # Then block
-            (section if in_func else self.text).append("{" + label_end + "}")
+            l_end = self.new_label("if_end")
+
+            self.emit_condition_jump_false(node[1], l_end)
+
+            self.visit(node[2])
+
+            self.place_label(l_end)
+
+        elif tag == 'IF_ELSE':
+            l_else = self.new_label("if_else")
+            l_end = self.new_label("if_end")
+
+            self.emit_condition_jump_false(node[1], l_else)
+
+            self.visit(node[2])
+            self.emit("JMP", l_end)
+
+            self.place_label(l_else)
+            self.visit(node[3])
+
+            self.place_label(l_end)
 
         elif tag == 'WHILE':
-            label_start = self.new_label("while_start")
-            label_end = self.new_label("while_end")
-            (section if in_func else self.text).append("{" + label_start + "}")
-            print(node[1])
-            self.visit(node[1], in_func) # Condition
-            self.emit("JMPZ", label_end, section=section)
-            self.visit(node[2], in_func) # Block
-            self.emit("JMP", label_start, section=section)
-            (section if in_func else self.text).append("{" + label_end + "}")
+            l_start = self.new_label("while_start")
+            l_end = self.new_label("while_end")
+
+            self.place_label(l_start)
+
+            self.emit_condition_jump_false(node[1], l_end)
+
+            self.visit(node[2])
+
+            self.emit("JMP", l_start)
+
+            self.place_label(l_end)
 
         elif tag == 'FOR':
-            l_start, l_end = self.new_label("for_start"), self.new_label("for_end")
+            l_start = self.new_label("for_start")
+            l_end = self.new_label("for_end")
+
             self.st.enter_scope()
-            self.visit(node[1], in_func) # Init
-            (section if in_func else self.text).append("{" + l_start + "}")
-            self.visit(node[2], in_func) # Condition (R5 = result)
-            self.emit("COMP", "R5", 0, section=section) # Assumes 0 is false
-            self.emit("JMPZ", l_end, section=section)
-            self.visit(node[4], in_func) # Body
-            self.visit(node[3], in_func) # Update
-            self.emit("JMP", l_start, section=section)
-            (section if in_func else self.text).append("{" + l_end + "}")
+
+            self.visit(node[1])
+
+            self.place_label(l_start)
+
+            self.emit_condition_jump_false(node[2], l_end)
+
+            self.visit(node[4])
+            self.visit(node[3])
+
+            self.emit("JMP", l_start)
+
+            self.place_label(l_end)
+
+            self.st.exit_scope()
+            
+        elif tag == 'RETURN':
+            self.visit(node[1])
+            self.emit("MOV", "RA", "R5")
+
+            self.emit("MOV", "SP", "BP")
+            self.emit("POP", "BP")
+            self.emit("POP", "PC")
+            
+        elif tag == 'FUNC_DEF':
+            prev = self.in_function
+            self.in_function = True
+            self.current_function = node[2]
+
+            self.place_label(node[2])
+
+            self.st.enter_scope()
+            self.st.reset_function_offsets()
+
+            self.emit("PUSH", "BP")
+            self.emit("MOV", "BP", "SP")
+
+            params = node[3]
+
+            reg_params = ["R1", "R2", "R3", "R4", "R5"]
+
+            stack_params_off = 2
+            
+            for idx, (ptype, pname) in enumerate(params):
+
+                if idx < 5: #parametros en registro
+                    offset = self.st.declare(pname, ptype)
+                    self.emit("DEC", "SP")
+                    self.emit("LDINT", "RB", offset)
+                    self.emit("ADD", "RB", "BP", "RB")
+                    self.emit("STOR", reg_params[idx], "RB")
+                
+                else: # parametros en stack
+                    #manualmente adicionar a la tabla por complejidad
+                    self.st.scopes[-1][pname] = {
+                        'type': ptype,
+                        'offset': stack_param_offset,
+                        'size': 1,
+                        'global': False,
+                        'param': True
+                    }
+
+                    stack_param_offset += 1
+
+            self.visit(node[4])
+
+            self.emit("MOV", "SP", "BP")
+            self.emit("POP", "BP")
+            self.emit("POP", "PC")
+
             self.st.exit_scope()
 
-        elif tag == 'FUNC_DEF':
-            section = self.functions
-            in_func = True
-            # label name: {function_name}
-            self.functions.append("{" + node[2] + "}")
-            self.st.enter_scope()
-            self.emit("PUSH", "BP", section=section)
-            self.emit("MOV", "BP", "SP", section=section)
-            for type, name in node[3]:
-                self.st.declare(name, type)
-            # Logic to handle params from stack...
-            self.visit(node[4], in_func) # Block
-            self.st.exit_scope()
-            self.emit("POP", "BP", section=section)
-            self.emit("POP", "PC", section=section) # Simplified return
-            section = None
-            in_func = False
+            self.current_function = None
+            self.in_function = prev
 
         elif tag == 'METHOD_DEF':
             # Method: struct_name.method_name
@@ -167,13 +334,37 @@ class CodeGenerator:
             self.emit("POP", "PC", section=section)
 
         elif tag == 'CALL_FUNC':
-            # 1. Push arguments
-            for arg in reversed(node[2]):
-                self.visit(arg, in_func)
-                self.emit("PUSH", "R5", section=section)
-            # 2. Call (jump)
-            self.emit("PUSH", "PC", section=section) # Save return address
-            self.emit("JMP", node[1], section=section)
+            args = node[2]
+            reg_params = ["R1", "R2", "R3", "R4", "R5"]
+
+            stack_args = args[5:]
+
+            for arg in reversed(stack_args):
+                self.visit(arg)
+                self.emit("PUSH", "R5")
+
+            if len(args) >= 5:
+                self.visit(arg[5])
+                self.emit("PUSH", "R5")
+
+            N = len(args) if len(args) < 4 else 4
+            for idx, arg in enumerate(reversed(args[:4]), 1):
+                self.visit(arg)
+                self.emit("MOV", reg_params[N-idx], "R5")
+            
+            if len(args) >= 5:
+                self.emit("POP", "R5")
+
+            ret_label = self.new_label("ret")
+
+            self.emit("LOADINT", "RC", ret_label)
+            self.emit("PUSH", "RC")
+
+            self.emit("JMP", node[1])
+            
+            self.place_label(ret_label)
+            self.emit("MOV", "R5", "RA")
+            
 
         elif tag == 'CALL_METHOD':
             # hidden 'this' logic
@@ -192,29 +383,94 @@ class CodeGenerator:
             self.emit("JMP", f"{self.st.lookup(instance[1])['type']}_{instance[2]}", section=section)
 
         elif tag == 'AND':
-            self.visit(node[1], in_func)
-            self.emit("PUSH", "R5", section=section)
-            self.visit(node[2], in_func)
-            self.emit("POP", "R1", section=section)
-            self.emit("AND", "R5", "R1", "R5", section=section)
+            self.visit(node[1])
+            self.emit("PUSH", "R5")
+
+            self.visit(node[2])
+            self.emit("POP", "R1")
+
+            self.emit("AND", "R5", "R1", "R5")
+        
+        elif tag == 'OR':
+            self.visit(node[1])
+            self.emit("PUSH", "R5")
+
+            self.visit(node[2])
+            self.emit("POP", "R1")
+
+            self.emit("OR", "R5", "R1", "R5")
+        
+        elif tag == 'NOT':
+            self.visit(node[1])
+            self.emit("NOT", "R5", "R5")
             
         elif tag in ('+', '-', '*', '/'):
-            # Arithmetic: Evaluate left, then right, then operate
-            # This is a template for a recursive register-based generator
-            self.visit(node[1], in_func)
-            self.emit("PUSH", "R5", section=section)
-            self.visit(node[2], in_func)
-            self.emit("POP", "R1", section=section)
-            op = {'+':'ADD', '-':'SUB', '*':'MUL', '/':'DIV'}[tag]
-            self.emit(op, "R5", "R1", "R5", section=section)
+            self.visit(node[1])
+            self.emit("PUSH", "R5")
 
-        if tag == 'DECL_ASSIGN':
-            offset = self.st.declare(node[2], node[1])
-            self.visit(node[3], in_func) # Evaluate Expr into R5
-            self.emit("LDINT", "R1", offset, section=section)
-            self.emit("ADD", "R2", "BP", "R1", section=section)
-            self.emit("STOR", "R5", "R2", section=section)
-            self.emit("INC", "SP", section=section)
+            self.visit(node[2])
+            self.emit("POP", "R1")
+
+            op = {
+                '+': 'ADD',
+                '-': 'SUB',
+                '*': 'MUL',
+                '/': 'DIV'
+            }[tag]
+
+            self.emit(op, "R5", "R1", "R5")
+
+        elif tag in ('<', '>', '<=', '>=', '==', '!='):
+            op = tag
+
+            self.visit(node[1])
+            self.emit("PUSH", "R5")
+
+            self.visit(node[2])
+            self.emit("POP", "R1")
+
+            self.emit("COMP", "R1", "R5")
+
+            l_true = self.new_label("rel_true")
+            l_end = self.new_label("rel_end")
+
+            if op == '<':
+                self.emit("JMPN", l_true)
+
+            elif op == '>':
+                self.emit("JMPNN", l_true)
+                self.emit("JMPZ", l_end)
+
+            elif op == '==':
+                self.emit("JMPZ", l_true)
+
+            elif op == '!=':
+                self.emit("JMPNZ", l_true)
+
+            elif op == '<=':
+                self.emit("JMPN", l_true)
+                self.emit("JMPZ", l_true)
+
+            elif op == '>=':
+                self.emit("JMPNN", l_true)
+
+            self.emit("LDINT", "R5", 0)
+            self.emit("JMP", l_end)
+
+            self.place_label(l_true)
+            self.emit("LDINT", "R5", 1)
+
+            self.place_label(l_end)
+
+        elif tag == 'INC_VAR':
+            self.load_variable(node[1])
+            self.emit("INC", "R5")
+            self.store_variable(node[1])
+
+        elif tag == 'DEC_VAR':
+            self.load_variable(node[1])
+            self.emit("DEC", "R5")
+            self.store_variable(node[1])
 
         elif tag == 'MEMBER_ACCESS':
             # this.x logic
