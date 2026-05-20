@@ -1,0 +1,114 @@
+int a = 24;
+int b = 18;
+int c;
+int euclides(int a, int b) {
+    int c;
+    while (b != 0) {
+    c = b;
+    b = a / b;
+    b = a - c * b;
+    a = c;
+    }
+}
+
+c = euclides(a, b);
+
+/*
+Compilado a 
+data:
+{global_a}
+24
+{global_b}
+18
+{global_c}
+0
+text:
+MOV BP, SP
+LDINT R1, global_a  #R1 <- &a
+LOADMEM R5, R1      #R5 <- a
+MOV R1, R5          #R1 <- a
+LDINT R1, global_b  #R1 <- &b   Not right overrides value of R1
+LOADMEM R5, R1      #R5 <- b
+MOV R2, R5          #R2 <- b
+PUSH PC             #b[0] <- PC SP--
+JMP euclides        #SP <- euclides
+LDINT R1, global_c  #R1 <- &c
+STOR R5, R1         #c <- R5
+HLT
+{euclides}  #R1 = a, R2 = b
+PUSH BP             #*SP <- BP
+MOV BP, SP          #BP <- SP
+DEC SP              #SP--
+LDINT RB, 0         #RB <- 0
+ADD RB, BP, RB      #RB <- BP + 0
+STOR R1, RB         #BP[0] <- R1
+DEC SP              #SP--
+LDINT RB, 2         #RB <- 2
+ADD RB, BP, RB      #RB <- BP + 2
+STOR R2, RB         #BP[2] <- R2
+DEC SP
+{while_start_1}
+LDINT R1, 2
+ADD R1, BP, R1
+LOADMEM R5, R1
+PUSH R5
+LDINT R5, 0
+POP R1
+COMP R1, R5
+JMPNZ rel_true_3
+LDINT R5, 0
+JMP rel_end_4
+{rel_true_3}
+LDINT R5, 1
+{rel_end_4}
+LDINT RA, 0
+COMP R5, RA
+JMPZ while_end_2
+LDINT R1, 2
+ADD R1, BP, R1
+LOADMEM R5, R1
+LDINT R1, 3
+ADD R1, BP, R1
+STOR R5, R1
+LDINT R1, 0
+ADD R1, BP, R1
+LOADMEM R5, R1
+PUSH R5
+LDINT R1, 2
+ADD R1, BP, R1
+LOADMEM R5, R1
+POP R1
+DIV R5, R1, R5
+LDINT R1, 2
+ADD R1, BP, R1
+STOR R5, R1
+LDINT R1, 0
+ADD R1, BP, R1
+LOADMEM R5, R1
+PUSH R5
+LDINT R1, 3
+ADD R1, BP, R1
+LOADMEM R5, R1
+PUSH R5
+LDINT R1, 2
+ADD R1, BP, R1
+LOADMEM R5, R1
+POP R1
+MUL R5, R1, R5
+POP R1
+SUB R5, R1, R5
+LDINT R1, 2
+ADD R1, BP, R1
+STOR R5, R1
+LDINT R1, 3
+ADD R1, BP, R1
+LOADMEM R5, R1
+LDINT R1, 0
+ADD R1, BP, R1
+STOR R5, R1
+JMP while_start_1
+{while_end_2}
+MOV SP, BP
+POP BP
+POP PC
+*/
